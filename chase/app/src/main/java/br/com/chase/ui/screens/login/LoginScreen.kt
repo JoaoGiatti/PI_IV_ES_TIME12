@@ -5,26 +5,24 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
-import androidx.compose.ui.text.font.FontWeight.Companion.Medium
 import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.chase.R
+import br.com.chase.ui.components.NoInternetBanner
 import br.com.chase.ui.theme.Poppins
-
+import br.com.chase.ui.theme.PrimaryRainbow
 
 @Composable
 fun LoginScreen(
@@ -45,116 +43,125 @@ fun LoginScreen(
         if (state.user != null) onLoginSuccess()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.background),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
+    Scaffold(
+        topBar = {
+            if (!state.isConnected) {
+                NoInternetBanner()
+            }
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
             Image(
-                painter = painterResource(id = R.drawable.chase_logo_mais_nome),
-                contentDescription = "CHASE",
-                modifier = Modifier.size(152.dp, 35.dp),
-                contentScale = ContentScale.Fit
+                painter = painterResource(id = R.drawable.background),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
-
-            Text("(Adicionar Arte)")
-            // Arte
-            /*Image(
-                painter = painterResource(id = R.drawable.arte),
-                contentDescription = "",
-            )*/
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Text(
-                text = "Bem vindo(a)!",
-                style = TextStyle(
-                    fontFamily = Poppins,
-                    fontWeight = SemiBold,
-                    fontSize = 24.sp,
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(top = 24.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.chase_logo_mais_nome),
+                    contentDescription = "CHASE",
+                    modifier = Modifier
+                        .size(width = 152.dp, height = 35.dp),
+                    contentScale = ContentScale.Fit
                 )
-            )
-            Text(
-                text = "Entre para começar a usar",
-                style = TextStyle(
-                    fontFamily = Poppins,
-                    fontWeight = SemiBold,
-                    fontSize = 22.sp,
-                )
-            )
-            Row(){
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.weight(4.0f))
+
                 Text(
-                    text = "o ",
+                    text = "Bem vindo(a)!",
+                    style = TextStyle(
+                        fontFamily = Poppins,
+                        fontWeight = SemiBold,
+                        fontSize = 24.sp,
+                    )
+                )
+
+                Text(
+                    text = "Entre para começar a usar",
                     style = TextStyle(
                         fontFamily = Poppins,
                         fontWeight = SemiBold,
                         fontSize = 22.sp,
                     )
                 )
-                Text(
-                    text = "Chase!",
-                    style = TextStyle(
-                        fontFamily = Poppins,
-                        fontWeight = Bold,
-                        fontSize = 22.sp,
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFFC84066), Color(0xFFE85944))
-                        )
-                    )
-                )
-            }
 
-            Spacer(modifier = Modifier.height(30.dp))
-
-            if (!state.isConnected) {
-                Text(
-                    text = "Sem conexão com a internet ⚠️",
-                    color = MaterialTheme.colorScheme.error
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            Button(
-                onClick = { launcher.launch(viewModel.getSignInIntent()) },
-                enabled = state.isConnected && !state.isLoading,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black
-                ),
-                border = BorderStroke(1.dp, color = Color(0xFF000000)),
-
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.icon_google),
-                        contentDescription = "Google",
-                        modifier = Modifier
-                            .size(35.dp)
-                    )
-                    Spacer(modifier = Modifier.width(30.dp))
+                Row {
                     Text(
-                        text = "Entrar com Google",
+                        text = "o ",
                         style = TextStyle(
                             fontFamily = Poppins,
-                            fontSize = 16.sp,
+                            fontWeight = SemiBold,
+                            fontSize = 22.sp,
                         )
                     )
-                    Spacer(modifier = Modifier.width(30.dp))
+                    Text(
+                        text = "Chase!",
+                        style = TextStyle(
+                            fontFamily = Poppins,
+                            fontWeight = Bold,
+                            fontSize = 22.sp,
+                            brush = Brush.linearGradient(
+                                colors = PrimaryRainbow
+                            )
+                        )
+                    )
                 }
+
+                Spacer(modifier = Modifier.height(60.dp))
+
+                Button(
+                    onClick = { launcher.launch(viewModel.getSignInIntent()) },
+                    enabled = state.isConnected && !state.isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    ),
+                    border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.icon_google),
+                            contentDescription = "Google",
+                            modifier = Modifier.size(35.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Text(
+                            text = "Entrar com Google",
+                            style = TextStyle(
+                                fontFamily = Poppins,
+                                fontSize = 16.sp,
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
 }
+
+
