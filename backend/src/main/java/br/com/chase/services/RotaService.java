@@ -2,6 +2,7 @@ package br.com.chase.services;
 
 import br.com.chase.models.Rota;
 import br.com.chase.models.Ponto;
+import br.com.chase.models.Ranking;
 import br.com.chase.repositories.RotaRepository;
 import br.com.chase.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,26 @@ public class RotaService {
         rota.setVisibilidade("publica"); // padrão
 
         // Calcular velocidade média
-        rota.setVelocidadeMediaRecorde(calcularVelocidadeMedia(
+        double velocidadeMedia = calcularVelocidadeMedia(
                 rota.getDistancia(),
                 rota.getTempoRecorde()
-        ));
+        );
+        rota.setVelocidadeMediaRecorde(velocidadeMedia);
 
         // Calcular calorias estimadas (simplificado)
         rota.setCaloriasEstimadas(rota.getDistancia() * 60);
 
+        // Criar ranking inicial (criador é o primeiro)
+        Ranking rankingInicial = new Ranking(
+                rota.getCriadorId(),
+                "Criador da rota", // Pode ser substituído depois pelo nome real vindo do app
+                null, // foto de perfil, caso tenha
+                rota.getTempoRecorde(),
+                velocidadeMedia
+        );
+        rota.setRanking(List.of(rankingInicial));
+
+        // Salvar no banco
         return rotaRepository.save(rota);
     }
 

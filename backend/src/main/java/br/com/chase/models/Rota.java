@@ -7,6 +7,7 @@ import java.util.List;
 
 @Document(collection = "rotas")
 public class Rota {
+
     @Id
     private String id;
     private String criadorId;
@@ -18,6 +19,7 @@ public class Rota {
     private double caloriasEstimadas;
     private String visibilidade;
     private Date dataCriacao;
+    private List<Ranking> ranking;
 
     // 🔹 Getters e Setters
 
@@ -99,5 +101,13 @@ public class Rota {
 
     public void setDataCriacao(Date dataCriacao) {
         this.dataCriacao = dataCriacao;
+    }
+
+    public List<Ranking> getRanking() {
+        return ranking;
+    }
+
+    public void setRanking(List<Ranking> ranking) {
+        this.ranking = ranking;
     }
 }
