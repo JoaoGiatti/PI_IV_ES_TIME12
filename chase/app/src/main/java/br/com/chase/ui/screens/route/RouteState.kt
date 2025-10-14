@@ -1,12 +1,10 @@
-package br.com.chase.ui.screens.home
+package br.com.chase.ui.screens.route
 
 import com.google.firebase.auth.FirebaseUser
 
-data class HomeState(
+data class RouteState (
     val isLoading: Boolean = false,
     val user: FirebaseUser? = null,
     val errorMessage: String? = null,
     val isConnected: Boolean = true,
-    val selectedTab: Int = 0,
-    val topBarVisible: Boolean = true
 )

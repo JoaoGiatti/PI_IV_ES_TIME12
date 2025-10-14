@@ -1,76 +1,163 @@
 package br.com.chase.ui.screens.home
 
-import androidx.compose.foundation.BorderStroke
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import br.com.chase.ui.theme.Poppins
-import br.com.chase.ui.theme.PrimaryRainbow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.chase.R
-import kotlin.contracts.contract
+import br.com.chase.ui.components.NoInternetBanner
+import br.com.chase.ui.screens.route.RouteScreen
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
-    var selectedTab by remember { mutableStateOf("home") }
+fun HomeScreen(
+    viewModel: HomeViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
+    val coroutineScope = rememberCoroutineScope()
+
+    val pagerState = rememberPagerState(
+        initialPage = state.selectedTab,
+        pageCount = { 3 }
+    )
+
+    LaunchedEffect(state.topBarVisible) {
+        if (state.topBarVisible) {
+            delay(8000)
+            viewModel.setTopBarVisible(false)
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        viewModel.selectTab(pagerState.currentPage)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            bottomBar = {
+                NavigationBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    containerColor = Color.White
+                ) {
+                    NavigationBarItem(
+                        selected = state.selectedTab == 0,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
+                        icon = {
+                            Image(
+                                painter = if (state.selectedTab == 0)
+                                    painterResource(R.drawable.statistics_colorido)
+                                else painterResource(R.drawable.statistics_black),
+                                contentDescription = "Feed",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
+                    )
+                    NavigationBarItem(
+                        selected = state.selectedTab == 1,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
+                        icon = {
+                            Image(
+                                painter = if (state.selectedTab == 1)
+                                    painterResource(R.drawable.maps_colorido)
+                                else painterResource(R.drawable.maps_black),
+                                contentDescription = "Route",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
+                    )
+                    NavigationBarItem(
+                        selected = state.selectedTab == 2,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
+                        icon = {
+                            Image(
+                                painter = if (state.selectedTab == 2)
+                                    painterResource(R.drawable.user_colorido)
+                                else painterResource(R.drawable.user_black),
+                                contentDescription = "Profile",
+                                modifier = Modifier.size(25.dp)
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
+                    )
+                }
+            }
+        ) { paddingValues ->
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures { _, dragAmount ->
+                            if (dragAmount > 10) viewModel.setTopBarVisible(true)
+                            if (dragAmount < -10) viewModel.setTopBarVisible(false)
+                        }
+                    }
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = { viewModel.setTopBarVisible(true) })
+                    }
+            ) { page ->
+                when (page) {
+                    0 -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Bem-vindo à Feed!")
+                    }
+
+                    1 -> RouteScreen()
+
+                    2 -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Bem-vindo à Profile!")
+                    }
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = state.topBarVisible,
+            enter = slideInVertically(initialOffsetY = { -it }),
+            exit = slideOutVertically(targetOffsetY = { -it })
+        ) {
             TopAppBar(
-                title = {},
-                actions = {4
+                title = { },
+                actions = {
                     Button(
-                        onClick = { /*abrir menu */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White
-                        )
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "não fizemos e nem sabemos se faremos 😂",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                     ) {
                         Image(
                             painter = painterResource(R.drawable.menu),
@@ -89,106 +176,10 @@ fun HomeScreen() {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
                 modifier = Modifier.shadow(3.dp)
             )
-        },
-        floatingActionButton = {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .shadow(3.dp, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(Brush.linearGradient(colors = PrimaryRainbow), CircleShape)
-                ) {
-                    FloatingActionButton(
-                        onClick = { /* add rota */ },
-                        containerColor = Color.Transparent,
-                        contentColor = Color.White,
-                        modifier = Modifier.size(56.dp),
-                        elevation = FloatingActionButtonDefaults.elevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp
-                        )
-                    ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar rota")
-                    }
-                }
-            }
-        },
-        bottomBar = {
-            NavigationBar(
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = Color.White,
-            ){
-                NavigationBarItem(
-                    selected = selectedTab == "statistics",
-                    onClick = { selectedTab = "statistics" },
-                    icon = {
-                        Image(
-                            painter = if (selectedTab == "statistics")
-                                painterResource(R.drawable.statistics_colorido)
-                            else
-                                painterResource(R.drawable.statistics_black),
-                            contentDescription = "Estatísticas",
-                            modifier = Modifier.size(25.dp)
-                        )
-                    },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
-                )
-                NavigationBarItem(
-                    selected = selectedTab == "home",
-                    onClick = { selectedTab = "home" },
-                    icon = {
-                        Image(
-                            painter = if (selectedTab == "home")
-                                painterResource(R.drawable.maps_colorido)
-                            else
-                                painterResource(R.drawable.maps_black),
-                            contentDescription = "Home",
-                            modifier = Modifier.size(25.dp)
-                        )
-                    },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
-                )
-                NavigationBarItem(
-                    selected = selectedTab == "profile",
-                    onClick = { selectedTab = "profile" },
-                    icon = {
-                        Image(
-                            painter = if (selectedTab == "profile")
-                                painterResource(R.drawable.user_colorido)
-                            else
-                                painterResource(R.drawable.user_black),
-                            contentDescription = "Perfil",
-                            modifier = Modifier.size(25.dp)
-
-                        )
-                    },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
-                )
-            }
         }
-    ) { paddingValues ->
-        if (selectedTab == "home") {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Bem-vindo à Home!")
-            }
-        } else if (selectedTab == "statistcs") {
 
-        } else {
-
+        if (!state.isConnected) {
+            NoInternetBanner()
         }
     }
 }
-
-
-

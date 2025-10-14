@@ -74,4 +74,7 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Gestures: swipes...
+    implementation("androidx.compose.foundation:foundation:1.6.0")
 }
