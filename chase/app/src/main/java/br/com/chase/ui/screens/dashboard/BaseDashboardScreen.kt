@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.chase.R
 import br.com.chase.ui.components.NoInternetBanner
 import br.com.chase.ui.screens.profile.ProfileScreen
+import br.com.chase.ui.screens.route.RouteData
 import br.com.chase.ui.screens.route.RouteScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

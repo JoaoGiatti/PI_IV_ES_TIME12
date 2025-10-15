@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.chase.ui.screens.route.RouteData.Route
+import br.com.chase.ui.screens.route.RouteData.Runner
 import br.com.chase.ui.theme.PrimaryRainbow
 
 @Composable

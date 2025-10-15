@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.chase.ui.theme.PrimaryRainbow
 import br.com.chase.R
+import br.com.chase.ui.components.RoutesCard
+import br.com.chase.ui.screens.route.RouteData
 import br.com.chase.ui.theme.Poppins
 
 @Composable
@@ -89,7 +91,7 @@ fun ProfileScreen(){
                 Text(
                     text = "Nome do Usuário",
                     fontFamily = Poppins,
-                    fontSize = 26.sp
+                    fontSize = 24.sp
                 )
                 Text(
                     text = "Nível do Usuário (Lvl 0)",
@@ -111,7 +113,7 @@ fun ProfileScreen(){
                     Box(
                         modifier = Modifier
                             .width(170.dp)
-                            .height(45.dp)
+                            .height(40.dp)
                             .clip(RoundedCornerShape(7.dp))
                             .background(
                                 brush = Brush.linearGradient(colors = PrimaryRainbow),
@@ -137,7 +139,7 @@ fun ProfileScreen(){
                     Button(
                         modifier = Modifier
                             .width(170.dp)
-                            .height(45.dp),
+                            .height(40.dp),
                         onClick = { /* editar rotas */ },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
@@ -167,7 +169,7 @@ fun ProfileScreen(){
                         Text(
                             text = "Quilometragem",
                             fontFamily = Poppins,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             color = Color.Gray
                         )
                         Text(
@@ -190,7 +192,7 @@ fun ProfileScreen(){
                         Text(
                             text = "Tempo Competido",
                             fontFamily = Poppins,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             color = Color.Gray
                         )
                         Text(
@@ -213,7 +215,7 @@ fun ProfileScreen(){
                         Text(
                             text = "Gastos Totais",
                             fontFamily = Poppins,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             color = Color.Gray
                         )
                         Text(
@@ -223,184 +225,32 @@ fun ProfileScreen(){
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(15.dp))
                 HorizontalDivider(
-                    modifier = Modifier.width(370.dp),
+                    modifier = Modifier.width(350.dp),
                     color = Color.LightGray
                 )
-                Spacer(modifier = Modifier.height(25.dp))
-                Card(
-                    modifier = Modifier
-                        .width(370.dp)
-                        .height(250.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                    colors = CardDefaults.cardColors(Color.White)
-                ){
-                    // COLOCAR LÓGICA
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(15.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically){
-                            Image(
-                                painter = painterResource(R.drawable.pin),
-                                contentDescription = "Pin",
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Rua Tal, Bairro Tal, Cidade Tal",
-                                fontFamily = Poppins,
-                                fontSize = 14.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(15.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Column (
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ){
-                                Text(
-                                    text = "Distância",
-                                    fontFamily = Poppins,
-                                    fontSize = 12.sp,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = "00.00 km",
-                                    fontFamily = Poppins,
-                                    fontSize = 19.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(18.dp))
-                            Column (
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ){
-                                Text(
-                                    text = "Tempo Recorde",
-                                    fontFamily = Poppins,
-                                    fontSize = 12.sp,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = "0:00:00",
-                                    fontFamily = Poppins,
-                                    fontSize = 19.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(18.dp))
-                            Column (
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ){
-                                Row(verticalAlignment = Alignment.CenterVertically)
-                                {
-                                    Image(
-                                        painter = painterResource(R.drawable.competidores),
-                                        contentDescription = "",
-                                        modifier = Modifier.size(13.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Text(
-                                        text = "Competidores",
-                                        fontFamily = Poppins,
-                                        fontSize = 12.sp,
-                                        color = Color.Gray
-                                    )
-                                }
-                                Text(
-                                    text = "0",
-                                    fontFamily = Poppins,
-                                    fontSize = 19.sp
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(15.dp))
-                        HorizontalDivider(
-                            modifier = Modifier.width(320.dp),
-                            color = Color.LightGray
-                        )
-                        Spacer(modifier = Modifier.height(15.dp))
-                        // COLOCAR LÓGICA
-                        Row(verticalAlignment = Alignment.CenterVertically)
-                        {
-                            Text(
-                                text = "1#",
-                                style = TextStyle(
-                                    fontFamily = Poppins,
-                                    fontWeight = Bold,
-                                    fontSize = 14.sp,
-                                    brush = Brush.linearGradient(
-                                        colors = PrimaryRainbow
-                                    )
-                                )
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-
-                            // COLOCAR LÓGICA!!!!!!!!!
-                            Image(
-                                painter = painterResource(R.drawable.user_sem_foto),
-                                contentDescription = "",
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Usuário primeiro lugar",
-                                fontFamily = Poppins,
-                                fontSize = 12.sp
-                            )
-                            Spacer(modifier = Modifier.width(20.dp))
-                            Text(
-                                text = "0:00:00 - 0.0 km/h",
-                                fontFamily = Poppins,
-                                fontSize = 12.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically)
-                        {
-                            Text(
-                                text = "2#",
-                                style = TextStyle(
-                                    fontFamily = Poppins,
-                                    fontSize = 14.sp
-                                )
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-
-                            // COLOCAR LÓGICA!!!!!!!!!
-                            Image(
-                                painter = painterResource(R.drawable.user_sem_foto),
-                                contentDescription = "",
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Usuário segundo lugar",
-                                fontFamily = Poppins,
-                                fontSize = 12.sp
-                            )
-                            Spacer(modifier = Modifier.width(20.dp))
-                            Text(
-                                text = "0:00:00 - 0.0 km/h",
-                                fontFamily = Poppins,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
+                Spacer(modifier = Modifier.height(20.dp))
+                // 👇 SÓ PRA TER UMA IDEIA, TEM QUE PEGAR INFOS DAS ROTAS AINDA
+                if (route == null){
+                    Text(
+                        text = "Não há rotas por enquanto",
+                        fontFamily = Poppins,
+                        fontSize = 15.sp,
+                        color = Color.Gray
+                    )
+                } else {
+                    // PRA VER TEM QUE IR ATÉ O FINAL DO CÓDIGO
+                    RoutesCard(sampleRoute)
                 }
 
             }
         }
         Box(
             modifier = Modifier
-                .offset(y = (-230).dp)
+                .offset(y = (-235).dp)
                 .align(Alignment.Center)
-                .size(135.dp)
+                .size(130.dp)
                 .shadow(5.dp, CircleShape)
                 .background(color = Color.White)
 
@@ -411,9 +261,22 @@ fun ProfileScreen(){
                 contentDescription = "User sem foto",
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(125.dp)
+                    .size(120.dp)
             )
         }
     }
+}
 
-    }
+// SÓ PRA VER SE O RoutesCard FUNCIONA 👍
+val sampleRoute = RouteData.Route(
+    location = "Rua Tal, Bairro Tal, Cidade Tal",
+    distance = "5.0 km",
+    recordTime = "0:25:30",
+    competitors = 15,
+    topRunners = listOf(
+        RouteData.Runner("João", "0:25:30", "12 km/h"),
+        RouteData.Runner("Maria", "0:26:10", "11.5 km/h"),
+        RouteData.Runner("Pedro", "0:27:00", "11 km/h")
+    )
+)
+val route = null // 👈 COLOCA QLQR COISA DIFERENTE DE NULL PRA VER O CARD
