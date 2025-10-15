@@ -1,4 +1,4 @@
-package br.com.chase.ui.screens.home
+package br.com.chase.ui.screens.dashboard
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
+class BaseDashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext = getApplication<Application>().applicationContext
 
-    private val _state = MutableStateFlow(HomeState())
-    val state: StateFlow<HomeState> = _state
+    private val _state = MutableStateFlow(BaseDashboardState())
+    val state: StateFlow<BaseDashboardState> = _state
 
     fun selectTab(index: Int) {
         _state.update { it.copy(selectedTab = index) }

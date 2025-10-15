@@ -1,4 +1,4 @@
-package br.com.chase.ui.screens.home
+package br.com.chase.ui.screens.dashboard
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
@@ -23,14 +23,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.chase.R
 import br.com.chase.ui.components.NoInternetBanner
+import br.com.chase.ui.screens.profile.ProfileScreen
 import br.com.chase.ui.screens.route.RouteScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    viewModel: HomeViewModel = viewModel()
+fun BaseDashboardScreen(
+    viewModel: BaseDashboardViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -126,17 +127,12 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Bem-vindo à Feed!")
+                        Text(text = "Bem-vindo ao Feed!")
                     }
 
                     1 -> RouteScreen()
 
-                    2 -> Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Bem-vindo à Profile!")
-                    }
+                    2 -> ProfileScreen()
                 }
             }
         }
