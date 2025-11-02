@@ -5,7 +5,7 @@ Integrative Project IV - Software Engineering 2025.2 - Pontifical Catholic Unive
 <img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=00BFBF&height=120&section=header"/>
 
 <div align="center">
-    <img src="https://via.placeholder.com/100x100/00BFBF/FFFFFF?text=CHASE" alt="Chase Logo" width="100" margintop="-30"/>
+    <img src="docs/logoChase.png" alt="Chase Logo" width="100" margintop="-30"/>
 </div>
 
 <div align="center">
@@ -104,19 +104,19 @@ Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas
 <div align="center"><h3>Detalhes da Rota</h3></div>
 <p align="center"><i>Informações detalhadas da rota, recordes e opção para competir.</i></p>
 <div align="center">
-    <img src="https://via.placeholder.com/700x400/008B8B/FFFFFF?text=Detalhes+da+Rota" alt="Detalhes Rota" width="700"/>
+    <img src="docs/detalheRota.png" alt="Detalhes Rota" width="700"/>
 </div>
 
 <div align="center"><h3>Perfil do Usuário</h3></div>
 <p align="center"><i>Estatísticas, badges conquistados e histórico de corridas.</i></p>
 <div align="center">
-    <img src="https://via.placeholder.com/700x400/005F5F/FFFFFF?text=Perfil+do+Usuário" alt="Perfil" width="700"/>
+    <img src="docs/perfil.png" alt="Perfil" width="700"/>
 </div>
 
 <div align="center"><h3>Competição em Tempo Real</h3></div>
 <p align="center"><i>Interface durante a corrida com tracking GPS e métricas.</i></p>
 <div align="center">
-    <img src="https://via.placeholder.com/700x400/004D4D/FFFFFF?text=Corrida+em+Andamento" alt="Corrida" width="700"/>
+    <img src="docs/Feed.png" alt="Corrida" width="700"/>
 </div>
 
 ---
@@ -146,8 +146,8 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
   <!-- Informações sobre o Jean -->
   <tr>
     <td align="center" width="150px">
-      <a href="https://github.com/jeanyuki" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/SEU_USUARIO_AQUI" width="100px;" alt="Jean Profile Picture" style="border-radius: 50%;"/><br>
+      <a href="https://github.com/jeanyuki148" style="color: #ffffff; text-decoration: none;">
+        <img src="https://avatars.githubusercontent.com/u/jeanyuki148" width="100px;" alt="Jean Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
           <strong>Jean Yuki</strong>
         </sub>
@@ -164,8 +164,8 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
   <!-- Informações sobre a Jhenifer -->
   <tr>
     <td align="center" width="150px">
-      <a href="https://github.com/jheniferbarbosa" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/SEU_USUARIO_AQUI" width="100px;" alt="Jhenifer Profile Picture" style="border-radius: 50%;"/><br>
+      <a href="https://github.com/JheniferLais" style="color: #ffffff; text-decoration: none;">
+        <img src="https://avatars.githubusercontent.com/u/JheniferLais" width="100px;" alt="Jhenifer Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
           <strong>Jhenifer Barbosa</strong>
         </sub>
