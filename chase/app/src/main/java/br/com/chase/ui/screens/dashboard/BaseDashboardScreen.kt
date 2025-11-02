@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.chase.R
 import br.com.chase.ui.components.NoInternetBanner
+import br.com.chase.ui.screens.feed.FeedScreen
 import br.com.chase.ui.screens.profile.ProfileScreen
 import br.com.chase.ui.screens.route.RouteScreen
 import kotlinx.coroutines.delay
@@ -140,12 +141,7 @@ fun BaseDashboardScreen(
                     }
             ) { page ->
                 when (page) {
-                    0 -> Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Bem-vindo ao Feed!")
-                    }
+                    0 -> FeedScreen()
 
                     1 -> RouteScreen()
 
