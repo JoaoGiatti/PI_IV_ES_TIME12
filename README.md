@@ -1,11 +1,5 @@
-# PI4-GrupoC
-Integrative Project IV - Software Engineering 2025.2 - Pontifical Catholic University of Campinas (PUC-Campinas)
-
-
-<img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=00BFBF&height=120&section=header"/>
-
-<div align="center">
-    <img src="docs/logoChase.png" alt="Chase Logo" width="100" margintop="-30"/>
+<div align="center" style="margin-top: 30px;">
+    <img src="docs/imgs/logoChase.png" alt="Chase Logo" width="100"/>
 </div>
 
 <div align="center">
@@ -16,7 +10,7 @@ Integrative Project IV - Software Engineering 2025.2 - Pontifical Catholic Unive
 
 <h2 id="desc"> 📖 Descrição Geral</h2>
 
-**Chase** é um aplicativo mobile que transforma a corrida em uma experiência gamificada e social. Usuários podem criar rotas, competir por melhores tempos, conquistar territórios e interagir com uma comunidade de corredores. O objetivo é combater a monotonia e a falta de motivação na prática de exercícios físicos, especialmente entre iniciantes e corredores ocasionais.
+**Chase** é um aplicativo mobile que transforma a corrida numa experiência gamificada e social. Utilizadores podem criar rotas, competir por melhores tempos, conquistar territórios e interagir com uma comunidade de corredores. O objetivo é combater a monotonia e a falta de motivação, na prática de exercícios físicos, especialmente entre iniciantes e corredores ocasionais.
 
 ---
 
@@ -24,10 +18,10 @@ Integrative Project IV - Software Engineering 2025.2 - Pontifical Catholic Unive
 
 ### 🗺️ Criação e Exploração de Rotas
 - Crie rotas personalizadas usando GPS.
-- Explore rotas criadas por outros usuários na sua cidade ou durante viagens.
+- Explore rotas criadas por outros utilizadores na sua cidade ou durante viagens.
 
 ### 🏆 Competição e Rankings
-- Competir em rotas de outros usuários (time trial).
+- Competir em rotas de outros utilizadores.
 - Rankings por segmento com recordes pessoais (PR).
 - Sistema de pontuação e badges por conquistas.
 
@@ -41,7 +35,7 @@ Integrative Project IV - Software Engineering 2025.2 - Pontifical Catholic Unive
 - Pontuação por completar rotas.
 - Conquista de territórios virtuais.
 
-### 📱 Experiência do Usuário
+### 📱 Experiência do Utilizador
 - Funcionamento offline para registrar corridas sem internet.
 - Notificações push para engajamento.
 - Interface moderna e intuitiva com Jetpack Compose.
@@ -52,7 +46,7 @@ Integrative Project IV - Software Engineering 2025.2 - Pontifical Catholic Unive
 
 Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas para frontend, backend e armazenamento.
 
-### 🔹 Mobile (Kotlin + Jetpack Compose)
+### 🔹 Mobile (Kotlin + Jetpack Compose) MVVM
 - Desenvolvimento nativo Android com UI declarativa.
 - Integração com GPS e mapas para rastreamento em tempo real.
 
@@ -61,7 +55,7 @@ Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas
 - Comunicação segura entre app e servidor.
 
 ### 🔹 Banco de Dados (MongoDB)
-- Armazenamento flexível de dados de rotas, usuários e histórico de corridas.
+- Armazenamento flexível de dados de rotas, utilizadores e histórico de corridas.
 
 ### 🔹 Serviços Externos
 - **Google Maps SDK**: Visualização e criação de rotas.
@@ -72,7 +66,7 @@ Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas
 <h2 id="obs">📝 Diferenciais</h2>
 
 - **Gamificação Imersiva**: Transforma ruas e parques em arenas de competição.
-- **Comunidade Colaborativa**: Rotas criadas e validadas pelos usuários.
+- **Comunidade Colaborativa**: Rotas criadas e validadas pelos utilizadores.
 - **Progressão Visual**: Acompanhamento claro de evolução e conquistas.
 - **Motivação Social**: Competição saudável com amigos e ranking local.
 
@@ -80,44 +74,25 @@ Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas
 
 <h2 id="tech"> 🛠️ Tecnologias Utilizadas</h2>
 
-| Categoria                 | Tecnologia            | Descrição                                                       |
-|--------------------------|-----------------------|------------------------------------------------------------------|
-| Mobile Frontend          | Kotlin + Jetpack Compose | UI moderna e reativa para Android.                             |
-| Backend                  | Java + Spring Boot    | API robusta e escalável.                                       |
-| Banco de Dados           | MongoDB               | Armazenamento NoSQL flexível.                                  |
-| Mapas e Geolocalização   | Google Maps SDK       | Criação e exibição de rotas.                                   |
-| Autenticação             | Firebase Auth         | Gerenciamento seguro de usuários.                              |
-| Notificações             | Firebase Cloud Messaging| Notificações push para engajamento.                            |
-| Controle de Versão       | Git                   | Versionamento de código.                                       |
-| Design e Prototipagem    | Figma                 | Interface e experiência do usuário.                            |
+| Categoria              | Tecnologia               | Descrição                           |
+|------------------------|--------------------------|-------------------------------------|
+| Mobile Frontend        | Kotlin + Jetpack Compose | UI moderna e reativa para Android.  |
+| Backend                | Java + Spring Boot       | API robusta e escalável.            |
+| Banco de Dados         | MongoDB                  | Armazenamento NoSQL flexível.       |
+| Mapas e Geolocalização | Google Maps SDK          | Criação e exibição de rotas.        |
+| Autenticação           | Firebase Auth            | Gerenciamento seguro de usuários.   |
+| Notificações           | Firebase Cloud Messaging | Notificações push para engajamento. |
+| Controle de Versão     | Git                      | Versionamento de código.            |
+| Design e Prototipagem  | Figma                    | Interface e experiência do usuário. |
 
 ---
 
 <h2 id="telas">💻 Telas do Sistema</h2>
 
-<div align="center"><h3>Tela Inicial - Mapa de Rotas</h3></div>
-<p align="center"><i>Visualize rotas próximas, crie novas rotas e navegue pelo mapa.</i></p>
-<div align="center">
-    <img src="https://via.placeholder.com/700x400/00BFBF/FFFFFF?text=Mapa+de+Rotas" alt="Tela Mapa" width="700"/>
-</div>
-
-<div align="center"><h3>Detalhes da Rota</h3></div>
-<p align="center"><i>Informações detalhadas da rota, recordes e opção para competir.</i></p>
-<div align="center">
-    <img src="docs/detalheRota.png" alt="Detalhes Rota" width="700"/>
-</div>
-
-<div align="center"><h3>Perfil do Usuário</h3></div>
-<p align="center"><i>Estatísticas, badges conquistados e histórico de corridas.</i></p>
-<div align="center">
-    <img src="docs/perfil.png" alt="Perfil" width="700"/>
-</div>
-
-<div align="center"><h3>Competição em Tempo Real</h3></div>
-<p align="center"><i>Interface durante a corrida com tracking GPS e métricas.</i></p>
-<div align="center">
-    <img src="docs/Feed.png" alt="Corrida" width="700"/>
-</div>
+| Tela Inicial - Autenticação                | Detalhes da Rota                                                  | Perfil do Usuário                                            | Competição em Tempo Real                                   |
+|--------------------------------------------|-------------------------------------------------------------------|--------------------------------------------------------------|------------------------------------------------------------|
+| *Se autentique usando sua conta da Google* | *Informações detalhadas da rota, recordes e opção para competir.* | *Estatísticas, badges conquistados e histórico de corridas.* | *Interface durante a corrida com tracking GPS e métricas.* |
+| ![Tela Login](docs/imgs/Login.png)         | ![Detalhes Rota](docs/imgs/Route.png)                             | ![Perfil](docs/imgs/Profile.png)                             | ![Corrida](docs/imgs/Feed.png)                             |
 
 ---
 
@@ -138,7 +113,7 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
     <td>
       <h3>DESIGN E DESENVOLVIMENTO MOBILE</h3>
         <p>
-            Responsável pela interface do usuário e experiência gamificada.
+            Responsável pela interface do utilizador e experiência gamificada.
         </p>
     </td>
   </tr>
@@ -167,7 +142,7 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
       <a href="https://github.com/JheniferLais" style="color: #ffffff; text-decoration: none;">
         <img src="https://avatars.githubusercontent.com/u/JheniferLais" width="100px;" alt="Jhenifer Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
-          <strong>Jhenifer Barbosa</strong>
+          <strong>Jhenifer Laís</strong>
         </sub>
       </a>
     </td>
@@ -215,5 +190,3 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
     </td>
   </tr>
 </table>
-
-<img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=00BFBF&height=120&section=footer"/>
