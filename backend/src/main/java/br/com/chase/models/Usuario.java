@@ -10,10 +10,10 @@ import java.util.List;
 public class Usuario {
 
     @Id
-    private String id; // UID do Firebase
+    private String uid; // UID do Firebase
     private String email;
-    private String name;
-    private String profilePicture;
+    private String displayName;
+    private String photoUrl;
     private Date createdAt;
     private List<String> medals;
     private double totalCalories;
@@ -21,17 +21,17 @@ public class Usuario {
     private double totalTime;
 
     // Getters e setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getUid() { return uid; }
+    public void setUid(String uid) { this.uid = uid; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
 
-    public String getProfilePicture() { return profilePicture; }
-    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
+    public String getPhotoUrl() { return photoUrl; }
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }

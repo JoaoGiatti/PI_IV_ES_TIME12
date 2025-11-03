@@ -1,9 +1,12 @@
 package br.com.chase.services;
 
+import br.com.chase.exceptions.UserAlreadyExistsException;
 import br.com.chase.models.Usuario;
 import br.com.chase.repositories.UsuarioRepository;
 import br.com.chase.exceptions.BadRequestException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,8 +23,8 @@ public class UsuarioService {
     public Usuario criarUsuario(Usuario usuario) {
         validarUsuario(usuario);
 
-        if (usuarioRepository.existsById(usuario.getId())) {
-            throw new BadRequestException("Usuário já cadastrado.");
+        if (usuarioRepository.existsById(usuario.getUid())) {
+            throw new UserAlreadyExistsException("Usuário já cadastrado.");
         }
 
         usuario.setCreatedAt(new Date());
@@ -34,13 +37,13 @@ public class UsuarioService {
     }
 
     private void validarUsuario(Usuario usuario) {
-        if (usuario.getId() == null || usuario.getId().isBlank())
-            throw new BadRequestException("O campo 'id' (UID Firebase) é obrigatório.");
+        if (usuario.getUid() == null || usuario.getUid().isBlank())
+            throw new BadRequestException("O campo 'uid' (UID Firebase) é obrigatório.");
 
         if (usuario.getEmail() == null || usuario.getEmail().isBlank())
             throw new BadRequestException("O campo 'email' é obrigatório.");
 
-        if (usuario.getName() == null || usuario.getName().isBlank())
-            throw new BadRequestException("O campo 'name' é obrigatório.");
+        if (usuario.getDisplayName() == null || usuario.getDisplayName().isBlank())
+            throw new BadRequestException("O campo 'displayname' é obrigatório.");
     }
 }
