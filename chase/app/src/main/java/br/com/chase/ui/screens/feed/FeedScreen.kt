@@ -113,7 +113,7 @@ fun FeedItemCard(item: FeedItem) {
             Spacer(modifier = Modifier.size(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                // Título e Categoria
+                //      Título e Categoria
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
