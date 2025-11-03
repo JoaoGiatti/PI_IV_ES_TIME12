@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import br.com.chase.R
 import br.com.chase.ui.theme.Poppins
 import br.com.chase.ui.theme.PrimaryRainbow
-import br.com.chase.ui.screens.route.RouteData
+import br.com.chase.data.local.model.RouteData
 
 @Composable
 fun RoutesCard(route: RouteData.Route) {

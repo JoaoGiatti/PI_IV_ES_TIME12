@@ -1,4 +1,4 @@
-package br.com.chase.ui.screens.route
+package br.com.chase.data.local.model
 
 class RouteData {
     data class Runner(

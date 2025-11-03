@@ -88,4 +88,11 @@ dependencies {
 
     // Foto do perfil do Usuario
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Retrofit + OkHttp + Moshi (JSON)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
