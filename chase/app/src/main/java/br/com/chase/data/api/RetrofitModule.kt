@@ -8,13 +8,19 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 object RetrofitModule {
-    private const val BASE_URL = "https://localhost:8080/api/"
+
+    // Se estiver usando o emulador é -> 10.0.2.2
+    // Se for um celular seu ip -> 192.168.x.x
+    private const val IP_ADRESS = "TO DO"
+    private const val BASE_URL = "http://$IP_ADRESS:8080/"
 
     private val client by lazy {
+        val logger = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
         OkHttpClient.Builder()
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
-            }).build()
+            .addInterceptor(logger)
+            .build()
     }
 
     private val moshi by lazy {

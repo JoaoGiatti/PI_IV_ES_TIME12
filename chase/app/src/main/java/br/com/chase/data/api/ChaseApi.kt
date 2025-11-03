@@ -1,6 +1,5 @@
 package br.com.chase.data.api
 
-import com.google.firebase.auth.FirebaseUser
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.Response
@@ -9,8 +8,8 @@ import retrofit2.http.Path
 
 interface ChaseApi {
 
-    @POST("users")
-    suspend fun createUser(@Body user: FirebaseUser): Response<FirebaseUser>
+    @POST("usuarios/criar")
+    suspend fun createUser(@Body user: UserRequest): Response<UserResponse>
 
     @GET("routes")
     suspend fun getAllRoutes(): RouteListResponse
