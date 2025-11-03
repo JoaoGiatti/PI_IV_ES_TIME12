@@ -1,22 +1,21 @@
 package br.com.chase.controllers;
+
 import br.com.chase.models.Usuario;
-import br.com.chase.repositories.UsuarioRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import br.com.chase.services.UsuarioService;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/usuarios")
 public class UsuarioController {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
-    public UsuarioController(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
-    @GetMapping("/criar-usuarios")
-    public String criarUsuarios() {
-        Usuario usuarioTeste = new Usuario("Giatto", "giatto@email.com");
-        usuarioRepository.save(usuarioTeste);
-        return "Coleção 'usuarios' criada com sucesso!";
+    @PostMapping("/criar")
+    public Usuario criarUsuario(@RequestBody Usuario usuario) {
+        return usuarioService.criarUsuario(usuario);
     }
 }
