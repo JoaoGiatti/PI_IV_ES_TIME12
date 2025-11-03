@@ -5,6 +5,9 @@ plugins {
 
     // Firebase...
     id("com.google.gms.google-services")
+
+    // Maps...
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
 }
 
 android {
@@ -61,14 +64,28 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Fontes Google...
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.0")
+
     // Firebase...
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-analytics")
 
     // Firebase Auth...
-    implementation("com.google.android.gms:play-services-auth:21.2.0") // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("com.google.firebase:firebase-auth-ktx:23.2.0")
+
+    // Maps...
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
+    implementation("com.google.maps.android:maps-compose:4.3.3")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Gestures: swipes...
+    implementation("androidx.compose.foundation:foundation:1.6.0")
+
+    // Foto do perfil do Usuario
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }

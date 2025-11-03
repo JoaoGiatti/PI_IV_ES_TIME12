@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import br.com.chase.ui.screens.home.HomeScreen
+import br.com.chase.ui.screens.dashboard.BaseDashboardScreen
 import br.com.chase.ui.screens.login.LoginScreen
 import com.google.firebase.auth.FirebaseAuth
 
@@ -16,7 +16,7 @@ fun AppNavigation() {
     // Decide qual tela irá abrir primeiro
     val startDestination = when {
         hasCurrentUser == null -> "login"
-        else -> "home"
+        else -> "dashboard"
     }
 
     NavHost(
@@ -25,11 +25,11 @@ fun AppNavigation() {
     ) {
         composable("login") { LoginScreen(
             onLoginSuccess = {
-                navController.navigate("home") {
+                navController.navigate("dashboard") {
                     popUpTo("login") { inclusive = true }
                 }
             }
         ) }
-        composable("home") { HomeScreen() }
+        composable("dashboard") { BaseDashboardScreen() }
     }
 }
