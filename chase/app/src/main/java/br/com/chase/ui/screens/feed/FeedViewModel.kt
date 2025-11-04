@@ -1,7 +1,6 @@
 package br.com.chase.ui.screens.feed
 
 import android.app.Application
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.chase.utils.NetworkObserver
@@ -15,10 +14,6 @@ import kotlinx.coroutines.withContext
 
 class FeedViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Constante para o número robusto de itens de feed.
-    private val ITEM_COUNT = 500
-
-    // Contexto da aplicação, usado para o NetworkObserver.
     private val appContext = getApplication<Application>().applicationContext
 
     // Estado interno (MutableStateFlow) que o Compose irá observar.
@@ -29,7 +24,7 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
         // 1. Inicializa a observação do status de rede (conexão).
         observeConnectivityStatus()
 
-        // 2. Inicia o carregamento dos itens do feed.
+        // 2. Inicia o carregamento dos itens do feed (rotas).
         loadFeedItems()
     }
 
@@ -39,7 +34,6 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
      */
     private fun observeConnectivityStatus() {
         viewModelScope.launch {
-            // A NetworkObserver é um Flow que emite o status mais recente.
             NetworkObserver.observeNetworkStatus(appContext).collectLatest { connected ->
                 _state.update { it.copy(isConnected = connected) }
             }
@@ -47,38 +41,34 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Gerencia a lógica de carregamento dos itens do feed, incluindo simulação
-     * de chamadas a serviços remotos e a atualização do estado de carregamento.
+     * Gerencia a lógica de carregamento dos itens do feed (rotas).
      */
     private fun loadFeedItems() {
-        // Inicia o carregamento e define isLoading como true.
         _state.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
             try {
                 // Simula a busca de dados em um thread de I/O
-                val remoteData = withContext(Dispatchers.IO) {
-                    fetchRemoteData()
+                withContext(Dispatchers.IO) {
+                    kotlinx.coroutines.delay(1000) // Simula delay de rede
                 }
 
-                // Processa os dados recebidos (simulados)
-                val processedItems = generateMockItems(ITEM_COUNT, remoteData)
+                // Gera a lista de rotas simuladas
+                val routeItems = generateMockRouteItems()
 
                 // Atualiza o estado com a lista de itens e define isLoading como false.
                 _state.update {
                     it.copy(
-                        items = processedItems,
+                        items = routeItems,
                         isLoading = false
                     )
                 }
             } catch (e: Exception) {
-                // Em caso de falha na busca (simulada ou real)
                 println("Erro ao carregar o feed: ${e.message}")
                 _state.update {
                     it.copy(
                         items = emptyList(),
                         isLoading = false,
-                        // Aqui poderia adicionar um campo de erro no FeedState
                     )
                 }
             }
@@ -86,61 +76,44 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Simula uma chamada de API assíncrona para buscar dados remotos.
-     * Em um ambiente real, isso faria uma chamada de rede.
+     * Gera uma lista de FeedItem (Rotas) que corresponde à interface da imagem.
      */
-    private suspend fun fetchRemoteData(): String {
-        // Simula um delay de 1 segundo de rede
-        kotlinx.coroutines.delay(1000)
-        // Retorna um dado simulado que seria usado para construir os FeedItems
-        return "Dados remotos processados com sucesso!"
-    }
-
-    /**
-     * Gera uma lista de FeedItem com base em uma contagem especificada
-     * e dados remotos de apoio (para demonstrar o uso).
-     * * @param count O número de itens a gerar (mínimo de 500).
-     * @param remoteData Dados auxiliares simulados da API.
-     * @return Uma lista de FeedItem.
-     */
-    private fun generateMockItems(count: Int, remoteData: String): List<FeedItem> {
-        // Aumento da diversidade de categorias para 10
-        val categories = listOf(
-            "Finanças Pessoais",
-            "Investimentos",
-            "Tecnologia e Inovação",
-            "Saúde e Bem-estar",
-            "Notícias Globais",
-            "Cultura Pop",
-            "Mercado Imobiliário",
-            "Viagens e Turismo",
-            "Sustentabilidade",
-            "Carreiras e Empreendedorismo"
-        )
-
-        // Aumento da paleta de cores para maior variação visual
-        val colors = listOf(
-            Color(0xFF4CAF50), Color(0xFF2196F3), Color(0xFFFF9800), Color(0xFF9C27B0),
-            Color(0xFF00BCD4), Color(0xFFFF5722), Color(0xFF03A9F4), Color(0xFFE91E63),
-            Color(0xFF8BC34A), Color(0xFF673AB7)
-        )
-
-        // Gerando a lista de itens robusta (500)
-        return (1..count).map { i ->
-            val category = categories[i % categories.size]
-            val color = colors[i % colors.size]
-            val indexInPalette = i % colors.size
-
-            // Descrição mais variada e longa
-            val longDescription = "Esta é a descrição detalhada para o item $i. Ele está indexado na cor $indexInPalette, e pertence à importante área de '$category'. Este conteúdo é uma simulação de dados robustos para garantir que seu LazyColumn seja testado com eficiência. A informação remota era: '$remoteData'. Mais detalhes: O uso de corrotinas garante que a UI permaneça responsiva durante a simulação de I/O."
-
+    private fun generateMockRouteItems(): List<FeedItem> {
+        return listOf(
             FeedItem(
-                id = i,
-                title = "Notícia de $category | ID: $i",
-                description = longDescription,
-                category = category,
-                color = color
-            )
-        }
+                location = "R. Tiradentes, Jd. Guanabara, Monte Mor",
+                distance = "5.27 km",
+                recordTime = "24:32",
+                competitorsCount = 19,
+                topCompetitors = listOf(
+                    Competitor(1, "Jaime Ferreira", "24:32", "31.5 km/h"),
+                    Competitor(2, "Rafinha Jr", "24:21", "30.3 km/h"),
+                    Competitor(3, "Emanuele Ferreira", "23:46", "29.0 km/h"),
+                )
+            ),
+            FeedItem(
+                location = "R. Olímpio Faria, Jd Alvorada, Monte Mor",
+                distance = "16.78 km",
+                recordTime = "1:35:07",
+                competitorsCount = 17,
+                topCompetitors = listOf(
+                    Competitor(1, "Júlia Mattos", "1:35:07", "35.5 km/h"),
+                    Competitor(2, "Felps Humild", "1:32:22", "35.1 km/h"),
+                    Competitor(3, "Ferrazzz", "1:23:01", "33.2 km/h"),
+                )
+            ),
+            // Terceiro item, repetindo o primeiro
+            FeedItem(
+                location = "R. Tiradentes, Jd. Guanabara, Monte Mor",
+                distance = "5.27 km",
+                recordTime = "24:32",
+                competitorsCount = 19,
+                topCompetitors = listOf(
+                    Competitor(1, "Jaime Ferreira", "24:32", "31.5 km/h"),
+                    Competitor(2, "Rafinha Jr", "24:21", "30.3 km/h"),
+                    Competitor(3, "Emanuele Ferreira", "23:46", "29.0 km/h"),
+                )
+            ),
+        )
     }
 }

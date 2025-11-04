@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,25 +39,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun FeedScreen(
-    viewModel: FeedViewModel = viewModel()
+    viewModel: FeedViewModel = viewModel() // Mantido o nome FeedViewModel
 ) {
     val state by viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Indicador de Status de Conexão (Barra de Aviso no topo)
-        if (!state.isConnected) {
-            ConnectivityWarningBar()
-        }
-
-        // Título e Greeting
-        Text(
-            text = "Olá! Seu Feed Diário",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(16.dp)
-        )
+        // Título e Logo
+        Header(state.isConnected)
 
         // Conteúdo Principal: Loading, Vazio ou Lista
         when {
@@ -73,82 +65,162 @@ fun FeedScreen(
 }
 
 @Composable
+fun Header(isConnected: Boolean) {
+    Column {
+        if (!isConnected) {
+            ConnectivityWarningBar()
+        }
+
+        // Simulação do logotipo CHASE (texto em negrito vermelho)
+        Text(
+            text = "CHASE",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Black,
+            color = Color.Red.copy(alpha = 0.8f), // Simula a cor do logo
+            modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)
+        )
+        // Título Principal
+        Text(
+            text = "Melhores Rotas de Monte Mor",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+}
+
+@Composable
 fun FeedList(items: List<FeedItem>) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(items) { item ->
-            FeedItemCard(item = item)
+            RouteItemCard(item = item) // Função de card renomeada internamente
         }
         item {
-            // Espaço no final da lista
-            Spacer(modifier = Modifier.height(60.dp))
+            // Espaço no final da lista para a barra de navegação (que não está no código)
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
 @Composable
-fun FeedItemCard(item: FeedItem) {
+fun RouteItemCard(item: FeedItem) { // Usa FeedItem
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
+        // Fundo branco/claro para replicar a imagem
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Círculo colorida para categoria/tipo
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(item.color)
-            )
-
-            Spacer(modifier = Modifier.size(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                //      Título e Categoria
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = item.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = item.category,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = item.color,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                // Descrição
-                Text(
-                    text = item.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(modifier = Modifier.padding(16.dp)) {
+            // 1. Localização
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Localização",
+                    tint = Color.Red,
+                    modifier = Modifier.size(18.dp)
                 )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = item.location,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 2. Estatísticas Principais
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                RouteStat(label = "Distância", value = item.distance)
+                RouteStat(label = "Tempo recorde", value = item.recordTime)
+                RouteStat(label = "Competidores", value = item.competitorsCount.toString())
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 3. Lista dos Top Competidores
+            item.topCompetitors.forEach { competitor ->
+                CompetitorRow(competitor = competitor)
             }
         }
     }
 }
 
 @Composable
+fun RouteStat(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.Start) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
+    }
+}
+
+@Composable
+fun CompetitorRow(competitor: Competitor) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        // Rank e Nome (com simulação de imagem de perfil)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${competitor.rank}#",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(end = 8.dp),
+                color = if (competitor.rank == 1) Color.Red else Color.Black
+            )
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray) // Simulação da imagem de perfil
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = competitor.name,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Black
+            )
+        }
+
+        // Tempo e Velocidade
+        Text(
+            text = "${competitor.time} - ${competitor.speed}",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            color = Color.DarkGray
+        )
+    }
+}
+
+
+@Composable
 fun ConnectivityWarningBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFFFCC00)) // Amarelo de aviso
+            .background(Color(0xFFFFCC00))
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -179,11 +251,13 @@ fun LoadingIndicator() {
 @Composable
 fun EmptyFeedMessage() {
     Box(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Seu feed está vazio por enquanto. Tente recarregar!",
+            text = "Seu feed de rotas está vazio por enquanto. Tente recarregar!",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
