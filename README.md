@@ -89,6 +89,8 @@ Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas
 
 <h2 id="telas">💻 Telas do Sistema</h2>
 
+[Acesse o design no Figma](https://www.figma.com/design/4Uc89tPYKJmkGYDoHKaI4c/CHASE?node-id=0-1&p=f&t=ym4cSAgGbIbEGTZz-0)
+
 | Tela Inicial - Autenticação                | Detalhes da Rota                                                  | Perfil do Usuário                                            | Competição em Tempo Real                                   |
 |--------------------------------------------|-------------------------------------------------------------------|--------------------------------------------------------------|------------------------------------------------------------|
 | *Se autentique usando sua conta da Google* | *Informações detalhadas da rota, recordes e opção para competir.* | *Estatísticas, badges conquistados e histórico de corridas.* | *Interface durante a corrida com tracking GPS e métricas.* |
