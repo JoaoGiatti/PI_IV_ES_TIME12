@@ -70,15 +70,6 @@ fun Header(isConnected: Boolean) {
         if (!isConnected) {
             ConnectivityWarningBar()
         }
-
-        // Simulação do logotipo CHASE (texto em negrito vermelho)
-        Text(
-            text = "CHASE",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Black,
-            color = Color.Red.copy(alpha = 0.8f), // Simula a cor do logo
-            modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)
-        )
         // Título Principal
         Text(
             text = "Melhores Rotas de Monte Mor",
