@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -91,7 +92,9 @@ fun ProfileScreen(
                 Text(
                     text = state.user?.displayName ?: "Usuário sem nome",
                     fontFamily = Poppins,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Text(
                     text = "Nível do Usuário (Lvl 0)",
@@ -105,58 +108,7 @@ fun ProfileScreen(
                     fontFamily = Poppins,
                     fontSize = 15.sp
                 )
-                Spacer(modifier = Modifier.height(25.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(170.dp)
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(7.dp))
-                            .background(
-                                brush = Brush.linearGradient(colors = PrimaryRainbow),
-                            )
-                    ){
-                        Button(
-                            modifier = Modifier.fillMaxSize(),
-                            onClick = { /* editar perfil */ },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text(
-                                text = "Editar Perfil",
-                                fontFamily = Poppins,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Button(
-                        modifier = Modifier
-                            .width(170.dp)
-                            .height(40.dp),
-                        onClick = { /* editar rotas */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.Gray
-                        ),
-                        border = BorderStroke(2.dp, Color.Gray),
-                        shape = RoundedCornerShape(7.dp)
-                    ) {
-                        Text(
-                            text = "Editar Rotas",
-                            fontFamily = Poppins,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(25.dp))
+                Spacer(modifier = Modifier.height(35.dp))
 
                 // COLOCAR LÓGICA!!!!!!!
                 Row(

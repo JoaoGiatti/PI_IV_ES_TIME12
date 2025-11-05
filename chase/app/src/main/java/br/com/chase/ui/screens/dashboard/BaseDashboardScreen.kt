@@ -161,24 +161,6 @@ fun BaseDashboardScreen(
         ) {
             TopAppBar(
                 title = { },
-                actions = {
-                    Button(
-                        onClick = {
-                            Toast.makeText(
-                                context,
-                                "não fizemos e nem sabemos se faremos 😂",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.menu),
-                            contentDescription = "Menu",
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                },
                 navigationIcon = {
                     Image(
                         painter = painterResource(id = R.drawable.chase_logo_mais_nome),
