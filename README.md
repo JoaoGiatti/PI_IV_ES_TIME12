@@ -87,6 +87,58 @@ Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas
 
 ---
 
+---
+<h2 id="database">🗃️ Modelos do Banco de Dados</h2>
+
+O Chase utiliza MongoDB para armazenamento de dados. Abaixo estão as principais coleções e seus campos:
+
+### 📊 Coleção: Users
+Armazena informações dos usuários e suas estatísticas.
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| \_id | String | ID único do usuário |
+| email | String | E-mail do usuário |
+| displayName | String | Nome de exibição |
+| photoUrl | String | URL da foto de perfil |
+| createdAt | Date | Data de criação da conta |
+| medals | Array | Lista de medalhas/conquistas |
+| totalCalories | Number | Total de calorias queimadas |
+| totalDistance | Number | Distância total percorrida |
+| totalTime | Number | Tempo total de corrida |
+
+### 🗺️ Coleção: Routes
+Armazena as rotas criadas pelos usuários.
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| \_id | ObjectId | ID único da rota |
+| criadorId | String | ID do criador da rota |
+| nome | String | Nome da rota |
+| pontos | Array | Coordenadas GPS da rota |
+| distancia | Number | Distância total da rota |
+| tempoRecorde | String | Melhor tempo na rota |
+| velocidadeMediaRecorde | Number | Melhor velocidade média |
+| caloriasEstimadas | Number | Calorias estimadas |
+| visibilidade | String | Visibilidade da rota |
+| dataCriacao | Date | Data de criação |
+| ranking | Array | Ranking de melhores tempos |
+
+### 🏃‍♂️ Coleção: Runs
+Armazena o histórico de corridas dos usuários.
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| \_id | ObjectId | ID único da corrida |
+| userId | String | ID do usuário |
+| routeId | String | ID da rota utilizada |
+| date | Date | Data e hora da corrida |
+| totalTime | String | Tempo total da corrida |
+| averageSpeed | Number | Velocidade média |
+| caloriesBurned | Number | Calorias queimadas |
+
+---
+
 <h2 id="telas">💻 Telas do Sistema</h2>
 
 [Acesse o design no Figma](https://www.figma.com/design/4Uc89tPYKJmkGYDoHKaI4c/CHASE?node-id=0-1&p=f&t=ym4cSAgGbIbEGTZz-0)
