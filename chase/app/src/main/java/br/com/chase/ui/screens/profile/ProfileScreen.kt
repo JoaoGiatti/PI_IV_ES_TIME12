@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +27,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -99,63 +102,30 @@ fun ProfileScreen(){
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Bio do Usuário",
-                    fontFamily = Poppins,
-                    fontSize = 15.sp
-                )
                 Spacer(modifier = Modifier.height(25.dp))
-                Row(
+                Box(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
+                    Text(
+                        text = "Bio do Usuário",
+                        fontFamily = Poppins,
+                        fontSize = 15.sp
+                    )
+                    IconButton(
+                        onClick = { /* editar bio */ },
                         modifier = Modifier
-                            .width(170.dp)
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(7.dp))
-                            .background(
-                                brush = Brush.linearGradient(colors = PrimaryRainbow),
-                            )
-                    ){
-                        Button(
-                            modifier = Modifier.fillMaxSize(),
-                            onClick = { /* editar perfil */ },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text(
-                                text = "Editar Perfil",
-                                fontFamily = Poppins,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Button(
-                        modifier = Modifier
-                            .width(170.dp)
-                            .height(40.dp),
-                        onClick = { /* editar rotas */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.Gray
-                        ),
-                        border = BorderStroke(2.dp, Color.Gray),
-                        shape = RoundedCornerShape(7.dp)
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.End)
                     ) {
-                        Text(
-                            text = "Editar Rotas",
-                            fontFamily = Poppins,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
+                        Icon(
+                            painter = painterResource(id = R.drawable.editar),
+                            contentDescription = "Editar",
+                            tint = Color.Unspecified
                         )
                     }
                 }
+
                 Spacer(modifier = Modifier.height(25.dp))
 
                 // COLOCAR LÓGICA!!!!!!!
