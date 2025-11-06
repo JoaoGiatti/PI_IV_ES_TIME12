@@ -64,11 +64,13 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
             } catch (e: Exception) {
+                // ALTERAÇÃO ABAIXO: Usar o campo 'error'
                 println("Erro ao carregar o feed: ${e.message}")
                 _state.update {
                     it.copy(
                         items = emptyList(),
                         isLoading = false,
+                        error = "Failed to load feed items. Please try again." // Mensagem de erro
                     )
                 }
             }
