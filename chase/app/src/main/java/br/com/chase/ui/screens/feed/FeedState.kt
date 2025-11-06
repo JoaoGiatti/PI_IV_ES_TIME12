@@ -23,5 +23,7 @@ data class FeedItem(
 data class FeedState(
     val isConnected: Boolean = true,
     val isLoading: Boolean = false,
-    val items: List<FeedItem> = emptyList() // Lista de Rotas
+    val items: List<FeedItem> = emptyList(), // Lista de Rotas
+    // NOVO CAMPO ADICIONADO ABAIXO
+    val error: String? = null
 )
