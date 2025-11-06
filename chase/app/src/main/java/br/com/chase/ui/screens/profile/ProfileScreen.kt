@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,8 +30,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,14 +56,20 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.chase.ui.theme.PrimaryRainbow
 import br.com.chase.R
 import br.com.chase.ui.components.RoutesCard
 import br.com.chase.ui.screens.route.RouteData
+import br.com.chase.ui.screens.route.RouteViewModel
 import br.com.chase.ui.theme.Poppins
 
 @Composable
-fun ProfileScreen(){
+fun ProfileScreen(
+    viewModel: ProfileViewModel = viewModel()
+){
+    val state by viewModel.state.collectAsState()
+
     Box(
         modifier = Modifier.fillMaxSize()
     ){
@@ -107,23 +119,148 @@ fun ProfileScreen(){
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Bio do Usuário",
-                        fontFamily = Poppins,
-                        fontSize = 15.sp
-                    )
-                    IconButton(
-                        onClick = { /* editar bio */ },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth(Alignment.End)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.editar),
-                            contentDescription = "Editar",
-                            tint = Color.Unspecified
-                        )
+                    if (state.bio.isEmpty()) {
+                        TextButton(
+                            onClick = {
+                                viewModel.onAdicionarBiografiaClick()
+                                viewModel.onShowDialog()
+                            }
+                        ) {
+                            Text(
+                                text = "+ Add Bio",
+                                fontFamily = Poppins,
+                                fontSize = 14.sp,
+                                color = Color.LightGray
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 55.dp, end = 55.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = state.bio,
+                                fontFamily = Poppins,
+                                fontSize = 14.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    viewModel.onEditarBiografiaClick()
+                                    viewModel.onShowDialog()
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.editar),
+                                    contentDescription = "Editar",
+                                    tint = Color.Unspecified
+                                )
+                            }
+                        }
                     }
+                }
+
+                // Popup para digitar ou editar a bio
+                if (state.showDialog) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            viewModel.onDismissDialog()
+                            viewModel.onDismissDialog()
+                        },
+                        title = {
+                            Text(
+                                text = "Editar Biografia",
+                                fontFamily = Poppins,
+                                fontSize = 18.sp
+                            )
+                        },
+                        text = {
+                            OutlinedTextField(
+                                value = state.bio,
+                                onValueChange = { viewModel.onBiografiaChange(it) },
+                                label = {
+                                    Text(
+                                        text = "Digite sua biografia:",
+                                        fontFamily = Poppins,
+                                        fontSize = 15.sp
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                        },
+                        shape = RoundedCornerShape(18.dp),
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    viewModel.onSalvarBiografiaClick()
+                                    viewModel.onDismissDialog()
+                                },
+                                contentPadding = PaddingValues(), // tira o padding padrão
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent // remove o fundo padrão
+                                ),
+                                shape = RoundedCornerShape(10.dp) // opcional
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            brush = Brush.horizontalGradient(
+                                                colors = listOf(
+                                                    Color(0xFFC84066),
+                                                    Color(0xFFE85944)
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .padding(vertical = 8.dp, horizontal = 35.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Salvar",
+                                        color = Color.White,
+                                        fontFamily = Poppins,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        },
+                        dismissButton = {
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.onCancelarClick()
+                                    viewModel.onDismissDialog()
+                                },
+                                border = BorderStroke(
+                                    1.dp,
+                                    Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color(0xFFC84066),
+                                            Color(0xFFE85944)
+                                        )
+                                    )
+                                ),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = Color(0xFFC84066)
+                                ),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text(
+                                    text = "Cancelar",
+                                    fontFamily = Poppins,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(25.dp))
