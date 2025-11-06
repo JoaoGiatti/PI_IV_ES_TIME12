@@ -78,6 +78,22 @@ fun LoginScreen(
                 )
             }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(top = 150.dp),
+                contentAlignment = Alignment.Center
+            ){
+                Image(
+                    painter = painterResource(R.drawable.arte),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .width(300.dp)
+                        .height(300.dp)
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
