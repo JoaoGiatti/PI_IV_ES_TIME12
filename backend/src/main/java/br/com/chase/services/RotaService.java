@@ -1,5 +1,6 @@
 package br.com.chase.services;
 
+import br.com.chase.exceptions.NotFoundException;
 import br.com.chase.models.Rota;
 import br.com.chase.models.Ponto;
 import br.com.chase.models.Ranking;
@@ -83,7 +84,7 @@ public class RotaService {
     public List<Rota> listarRotasPorUsuario(String userId) {
         List<Rota> rotas = rotaRepository.findByCriadorId(userId);
         if (rotas.isEmpty()) {
-            throw new BadRequestException("Nenhuma rota encontrada para o usuário informado.");
+            throw new NotFoundException("Nenhuma rota encontrada para o usuário informado.");
         }
         return rotas;
     }
