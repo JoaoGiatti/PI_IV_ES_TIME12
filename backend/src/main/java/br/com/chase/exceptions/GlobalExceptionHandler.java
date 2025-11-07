@@ -35,4 +35,13 @@ public class GlobalExceptionHandler {
         body.put("erro", "Erro interno no servidor");
         return ResponseEntity.internalServerError().body(body);
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("erro", ex.getMessage());
+        return ResponseEntity.status(404).body(body);
+    }
+
 }

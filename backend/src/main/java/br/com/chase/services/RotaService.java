@@ -1,5 +1,6 @@
 package br.com.chase.services;
 
+import br.com.chase.exceptions.NotFoundException;
 import br.com.chase.models.Rota;
 import br.com.chase.models.Ponto;
 import br.com.chase.models.Ranking;
@@ -78,5 +79,13 @@ public class RotaService {
         } catch (Exception e) {
             throw new BadRequestException("Formato de tempo inválido. Use HH:mm:ss");
         }
+    }
+
+    public List<Rota> listarRotasPorUsuario(String userId) {
+        List<Rota> rotas = rotaRepository.findByCriadorId(userId);
+        if (rotas.isEmpty()) {
+            throw new NotFoundException("Nenhuma rota encontrada para o usuário informado.");
+        }
+        return rotas;
     }
 }
