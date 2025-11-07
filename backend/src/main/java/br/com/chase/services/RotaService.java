@@ -79,4 +79,12 @@ public class RotaService {
             throw new BadRequestException("Formato de tempo inválido. Use HH:mm:ss");
         }
     }
+
+    public List<Rota> listarRotasPorUsuario(String userId) {
+        List<Rota> rotas = rotaRepository.findByCriadorId(userId);
+        if (rotas.isEmpty()) {
+            throw new BadRequestException("Nenhuma rota encontrada para o usuário informado.");
+        }
+        return rotas;
+    }
 }
