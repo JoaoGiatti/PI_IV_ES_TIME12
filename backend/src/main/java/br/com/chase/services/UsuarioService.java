@@ -4,12 +4,11 @@ import br.com.chase.exceptions.UserAlreadyExistsException;
 import br.com.chase.models.Usuario;
 import br.com.chase.repositories.UsuarioRepository;
 import br.com.chase.exceptions.BadRequestException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -36,6 +35,10 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    public Optional<Usuario> buscarPorUid(String uid) {
+        return usuarioRepository.findById(uid);
+    }
+
     private void validarUsuario(Usuario usuario) {
         if (usuario.getUid() == null || usuario.getUid().isBlank())
             throw new BadRequestException("O campo 'uid' (UID Firebase) é obrigatório.");
@@ -44,6 +47,11 @@ public class UsuarioService {
             throw new BadRequestException("O campo 'email' é obrigatório.");
 
         if (usuario.getDisplayName() == null || usuario.getDisplayName().isBlank())
-            throw new BadRequestException("O campo 'displayname' é obrigatório.");
+            throw new BadRequestException("O campo 'displayName' é obrigatório.");
+    }
+
+    public Usuario buscarUsuarioPorUid(String uid) {
+        return usuarioRepository.findById(uid)
+                .orElseThrow(() -> new BadRequestException("Usuário com UID " + uid + " não encontrado."));
     }
 }

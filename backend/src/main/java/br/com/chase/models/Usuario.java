@@ -2,25 +2,26 @@ package br.com.chase.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.util.Date;
 import java.util.List;
 
 @Document(collection = "usuarios")
 public class Usuario {
-
     @Id
-    private String uid; // UID do Firebase
+    private String uid;
     private String email;
     private String displayName;
     private String photoUrl;
+    private String bio;
     private Date createdAt;
     private List<String> medals;
     private double totalCalories;
     private double totalDistance;
     private double totalTime;
 
-    // Getters e setters
+    public Usuario() {}
+
+    // Getters e Setters
     public String getUid() { return uid; }
     public void setUid(String uid) { this.uid = uid; }
 
@@ -32,6 +33,9 @@ public class Usuario {
 
     public String getPhotoUrl() { return photoUrl; }
     public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
