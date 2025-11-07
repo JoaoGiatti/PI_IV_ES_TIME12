@@ -1,5 +1,6 @@
 package br.com.chase.services;
 
+import br.com.chase.exceptions.NotFoundException;
 import br.com.chase.exceptions.UserAlreadyExistsException;
 import br.com.chase.models.Usuario;
 import br.com.chase.repositories.UsuarioRepository;
@@ -54,4 +55,25 @@ public class UsuarioService {
         return usuarioRepository.findById(uid)
                 .orElseThrow(() -> new BadRequestException("Usuário com UID " + uid + " não encontrado."));
     }
+
+    public Usuario atualizarUsuario(String uid, Usuario usuarioAtualizado) {
+        Usuario usuarioExistente = usuarioRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("Usuário com UID " + uid + " não encontrado."));
+
+        // Atualiza apenas os campos que foram enviados no body
+        if (usuarioAtualizado.getDisplayName() != null && !usuarioAtualizado.getDisplayName().isBlank()) {
+            usuarioExistente.setDisplayName(usuarioAtualizado.getDisplayName());
+        }
+
+        if (usuarioAtualizado.getPhotoUrl() != null && !usuarioAtualizado.getPhotoUrl().isBlank()) {
+            usuarioExistente.setPhotoUrl(usuarioAtualizado.getPhotoUrl());
+        }
+
+        if (usuarioAtualizado.getBio() != null) {
+            usuarioExistente.setBio(usuarioAtualizado.getBio());
+        }
+
+        return usuarioRepository.save(usuarioExistente);
+    }
+
 }
