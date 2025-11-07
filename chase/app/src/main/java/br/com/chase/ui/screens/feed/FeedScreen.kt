@@ -54,12 +54,43 @@ fun FeedScreen(
             state.isLoading -> {
                 LoadingIndicator()
             }
+            // NOVO TRATAMENTO DE ERRO ABAIXO
+            state.error != null -> {
+                ErrorMessage(message = state.error!!)
+            }
+            // FIM DO NOVO TRATAMENTO
             state.items.isEmpty() -> {
                 EmptyFeedMessage()
             }
             else -> {
                 FeedList(state.items)
             }
+        }
+    }
+}
+// ...
+// Adicione a nova função de Composable no final do arquivo
+@Composable
+fun ErrorMessage(message: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "Erro",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
