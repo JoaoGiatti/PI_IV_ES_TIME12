@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -213,10 +215,7 @@ fun ProfileScreen(
                                     modifier = Modifier
                                         .background(
                                             brush = Brush.horizontalGradient(
-                                                colors = listOf(
-                                                    Color(0xFFC84066),
-                                                    Color(0xFFE85944)
-                                                )
+                                                colors = PrimaryRainbow
                                             ),
                                             shape = RoundedCornerShape(10.dp)
                                         )
@@ -241,10 +240,7 @@ fun ProfileScreen(
                                 border = BorderStroke(
                                     1.dp,
                                     Brush.horizontalGradient(
-                                        colors = listOf(
-                                            Color(0xFFC84066),
-                                            Color(0xFFE85944)
-                                        )
+                                        colors = PrimaryRainbow
                                     )
                                 ),
                                 colors = ButtonDefaults.outlinedButtonColors(
