@@ -7,10 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/users")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -19,20 +18,21 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    // POST - Criar novo usuário
-    @PostMapping("/criar")
+    // POST - Cria um usuario...
+    @PostMapping("/create")
     public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
         Usuario novoUsuario = usuarioService.criarUsuario(usuario);
         return ResponseEntity.ok(novoUsuario);
     }
 
-    // GET - Buscar usuário pelo UID (Firebase)
+    // GET - Mostra detalhes de um usuario pelo UID...
     @GetMapping("/{uid}")
-    public ResponseEntity<Usuario> buscarUsuarioPorUid(@PathVariable String uid) {
-        Usuario usuario = usuarioService.buscarUsuarioPorUid(uid);
+    public ResponseEntity<Usuario> buscarUsuario(@PathVariable String uid) {
+        Usuario usuario = usuarioService.buscarUsuario(uid);
         return ResponseEntity.ok(usuario);
     }
 
+    // PUT - Atualiza um usuario pelo UID
     @PutMapping("/{uid}")
     public ResponseEntity<Map<String, Object>> atualizarUsuario(
             @PathVariable String uid,
@@ -46,5 +46,4 @@ public class UsuarioController {
 
         return ResponseEntity.ok(response);
     }
-
 }

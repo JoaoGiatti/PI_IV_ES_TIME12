@@ -2,7 +2,7 @@ package br.com.chase.services;
 
 import br.com.chase.exceptions.NotFoundException;
 import br.com.chase.models.Rota;
-import br.com.chase.models.Ponto;
+import br.com.chase.models.LatLng;
 import br.com.chase.models.Ranking;
 import br.com.chase.repositories.RotaRepository;
 import br.com.chase.exceptions.BadRequestException;
@@ -20,51 +20,21 @@ public class RotaService {
         this.rotaRepository = rotaRepository;
     }
 
-    public Rota criarRota(Rota rota) {
-        validarRota(rota);
-
-        rota.setDataCriacao(new Date());
-        rota.setVisibilidade("publica"); // padrão
-
-        // Calcular velocidade média
-        double velocidadeMedia = calcularVelocidadeMedia(
-                rota.getDistancia(),
-                rota.getTempoRecorde()
-        );
-        rota.setVelocidadeMediaRecorde(velocidadeMedia);
-
-        // Calcular calorias estimadas (simplificado)
-        rota.setCaloriasEstimadas(rota.getDistancia() * 60);
-
-        // Criar ranking inicial (criador é o primeiro)
-        Ranking rankingInicial = new Ranking(
-                rota.getCriadorId(),
-                "Criador da rota", // Pode ser substituído depois pelo nome real vindo do app
-                null, // foto de perfil, caso tenha
-                rota.getTempoRecorde(),
-                velocidadeMedia
-        );
-        rota.setRanking(List.of(rankingInicial));
-
-        // Salvar no banco
-        return rotaRepository.save(rota);
-    }
-
     private void validarRota(Rota rota) {
         if (rota.getCriadorId() == null || rota.getCriadorId().isBlank())
             throw new BadRequestException("O campo 'criadorId' é obrigatório.");
 
-        if (rota.getNome() == null || rota.getNome().isBlank())
+        if (rota.getName() == null || rota.getName().isBlank())
             throw new BadRequestException("O campo 'nome' é obrigatório.");
 
-        if (rota.getDistancia() <= 0)
+        if (rota.getDistance() <= 0)
             throw new BadRequestException("A distância deve ser maior que zero.");
 
-        if (rota.getTempoRecorde() == null || rota.getTempoRecorde().isBlank())
+        if (rota.getRecordTime() == null  || rota.getRecordTime().isBlank())
             throw new BadRequestException("O tempo é obrigatório.");
 
-        List<Ponto> pontos = rota.getPontos();
-        if (pontos == null || pontos.isEmpty())
+        List<LatLng> latLngs = rota.getPoints();
+        if (latLngs == null || latLngs.isEmpty())
             throw new BadRequestException("A lista de pontos não pode estar vazia.");
     }
 
@@ -81,7 +51,38 @@ public class RotaService {
         }
     }
 
-    public List<Rota> listarRotasPorUsuario(String userId) {
+
+    public Rota criarRota(Rota rota) {
+        validarRota(rota);
+
+        rota.setCreatedAt(new Date());
+        rota.setPublic(true); // padrão
+
+        // Calcular velocidade média
+        double velocidadeMedia = calcularVelocidadeMedia(
+                rota.getDistance(),
+                rota.getRecordTime()
+        );
+        rota.setBestAverageSpeed(velocidadeMedia);
+
+        // Calcular calorias estimadas (simplificado)
+        rota.setEstimatedCalories(rota.getDistance() * 60);
+
+        // Criar ranking inicial (criador é o primeiro)
+        Ranking rankingInicial = new Ranking(
+                rota.getCriadorId(),
+                "Criador da rota", // Pode ser substituído depois pelo nome real vindo do app
+                null, // foto de perfil, caso tenha
+                rota.getRecordTime(),
+                velocidadeMedia
+        );
+        rota.setTop3(List.of(rankingInicial));
+
+        // Salvar no banco
+        return rotaRepository.save(rota);
+    }
+
+    public List<Rota> buscarRotasPorUsuario(String userId) {
         List<Rota> rotas = rotaRepository.findByCriadorId(userId);
         if (rotas.isEmpty()) {
             throw new NotFoundException("Nenhuma rota encontrada para o usuário informado.");

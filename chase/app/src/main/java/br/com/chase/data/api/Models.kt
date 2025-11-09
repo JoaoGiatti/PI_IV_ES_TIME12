@@ -13,9 +13,9 @@ data class UserRequest(
 data class UserResponse(
     val uid: Long,
     val email: String,
-    val displayName: String?,
-    val photoUrl: String?,
-    val bio: String?,
+    val displayName: String,
+    val photoUrl: String,
+    val bio: String,
     val createdAt: String,
     val medals: List<String>,
     val totalCalories: Double,
@@ -43,13 +43,20 @@ data class RouteRequest(
 )
 
 data class RouteResponse(
-    val id: String,
+    val rid: String,
     val creatorId: String,
     val name: String,
     val description: String,
+
+    val points: List<LatLng>,
     val distance: Double,
+    val recordTime: String,
+    val top3: List<String>,
+
+    val bestAverageSpeed: Double,
+    val estimatedCalories: Double,
+    val isPublic: Boolean,
     val createdAt: String,
-    val top3: List<String>
 )
 
 data class RouteAttemptRequest(

@@ -9,40 +9,40 @@ import retrofit2.http.Path
 
 interface ChaseApi {
 
-    // Cria um usuario...
-    @POST("usuarios/criar")
+    // POST - Cria um usuario...
+    @POST("users/create")
     suspend fun createUser(@Body user: UserRequest): Response<UserResponse>
 
-    // Mostra detalhes de um usuario pelo ID...
-    @GET("users/{userId}")
-    suspend fun getUser() : Response<UserResponse>
+    // GET - Mostra detalhes de um usuario pelo UID...
+    @GET("users/{uid}")
+    suspend fun getUser(@Path("uid") uid: String) : Response<UserResponse>
 
-    // Lista todas as rotas de um usuario pelo ID...
-    @GET("users/{userId}/routes}")
-    suspend fun getAllRoutesByUser(@Path("userId") userId: String): Response<RouteListResponse>
-
-    // Atualiza um usuario pelo ID...
-    @PUT("users/{userId}")
+    // PUT - Atualiza um usuario pelo UID
+    @PUT("users/{uid}")
     suspend fun updateUser(
-        @Path("userId") userId: String, @Body user: UserRequest
+        @Path("uid") uid: String, @Body user: UserRequest
     ): Response<UserResponse>
 
 
-    // Cria uma nova rota...
-    @POST("routes")
+    // POST - Cria uma rota...
+    @POST("routes/create")
     suspend fun createRoute(@Body route: RouteRequest): Response<RouteResponse>
 
-    // Lista todas as rotas...
-    @GET("routes")
-    suspend fun getAllRoutes(): Response<RouteListResponse>
+    // GET - Mostra detalhes de uma rota pelo RID => Rota ID...
+    @GET("routes/{rid}")
+    suspend fun getRoute(@Path("rid") rid: String): Response<RouteResponse>
 
-    // Mostra detalhes de uma rota pelo ID...
-    @GET("routes/{routeId}")
-    suspend fun getRouteById(@Path("routeId") routeId: String): Response<RouteResponse>
+    // GET - Lista todas as rotas(publicas)...
+    @GET("routes/public")
+    suspend fun getPublicRoutes(): Response<RouteListResponse>
 
-    // Atualiza o top3 de uma rota pelo ID...
-    @PUT("routes/{routeId}/attempt")
-    suspend fun updateRouteAttempt(
-        @Path("routeId") routeId: String, @Body attempt: RouteAttemptRequest
+    // GET - Lista todas as rotas de um usuario pelo UID...
+    @GET("routes/users/{uid}")
+    suspend fun getRoutesByUser(@Path("uid") uid: String): Response<RouteListResponse>
+
+    // PUT - Atualiza o top3 de uma rota pelo RID => Rota ID...
+    @PUT("routes/{rid}/attempt")
+    suspend fun updateRoute(
+        @Path("rid") rid: String, @Body attempt: RouteAttemptRequest
     ): Response<RouteResponse>
 }

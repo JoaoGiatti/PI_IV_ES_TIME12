@@ -20,6 +20,22 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    private Optional<Usuario> buscarPorUid(String uid) {
+        return usuarioRepository.findById(uid);
+    }
+
+    private void validarUsuario(Usuario usuario) {
+        if (usuario.getUid() == null || usuario.getUid().isBlank())
+            throw new BadRequestException("O campo 'uid' (UID Firebase) é obrigatório.");
+
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank())
+            throw new BadRequestException("O campo 'email' é obrigatório.");
+
+        if (usuario.getDisplayName() == null || usuario.getDisplayName().isBlank())
+            throw new BadRequestException("O campo 'displayName' é obrigatório.");
+    }
+
+
     public Usuario criarUsuario(Usuario usuario) {
         validarUsuario(usuario);
 
@@ -36,22 +52,7 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public Optional<Usuario> buscarPorUid(String uid) {
-        return usuarioRepository.findById(uid);
-    }
-
-    private void validarUsuario(Usuario usuario) {
-        if (usuario.getUid() == null || usuario.getUid().isBlank())
-            throw new BadRequestException("O campo 'uid' (UID Firebase) é obrigatório.");
-
-        if (usuario.getEmail() == null || usuario.getEmail().isBlank())
-            throw new BadRequestException("O campo 'email' é obrigatório.");
-
-        if (usuario.getDisplayName() == null || usuario.getDisplayName().isBlank())
-            throw new BadRequestException("O campo 'displayName' é obrigatório.");
-    }
-
-    public Usuario buscarUsuarioPorUid(String uid) {
+    public Usuario buscarUsuario(String uid) {
         return usuarioRepository.findById(uid)
                 .orElseThrow(() -> new BadRequestException("Usuário com UID " + uid + " não encontrado."));
     }
@@ -75,5 +76,4 @@ public class UsuarioService {
 
         return usuarioRepository.save(usuarioExistente);
     }
-
 }
