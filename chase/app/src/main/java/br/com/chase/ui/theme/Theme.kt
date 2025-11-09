@@ -35,6 +35,9 @@ private val LightColorScheme = lightColorScheme(
     primary = Color(0xFFE85944), // Exemplo pois nao da p colocar o listOf aqui...
     onPrimary = Color(0xFFFFFFFF),
 
+    secondary = Color(0xFFC84066),
+    onSecondary = Color(0xFFFFFFFF),
+
     background = Color(0xFFFFFFFF),
     onBackground = Color(0xFF252525),
 

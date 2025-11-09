@@ -12,15 +12,15 @@ public class Ranking {
     private String userName;
     private String photoUrl;
     private String totalTime;
-    private double AverageSpeed;
+    private double averageSpeed;
 
     public Ranking() {}
 
-    public Ranking(String uid, String userName, String photoUrl, String totalTime, double AverageSpeed) {
+    public Ranking(String uid, String userName, String photoUrl, String totalTime, double averageSpeed) {
         this.uid = uid;
         this.userName = userName;
         this.photoUrl = photoUrl;
         this.totalTime = totalTime;
-        this.AverageSpeed = AverageSpeed;
+        this.averageSpeed = averageSpeed;
     }
 }

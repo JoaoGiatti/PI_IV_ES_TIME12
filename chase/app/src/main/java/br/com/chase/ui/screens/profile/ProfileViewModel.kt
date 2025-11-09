@@ -3,6 +3,8 @@ package br.com.chase.ui.screens.profile
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.chase.data.ChaseSpringRepository
+import br.com.chase.data.api.RetrofitModule
 import br.com.chase.utils.NetworkObserver
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val chaseSpringRepository = ChaseSpringRepository(RetrofitModule.api)
     private val appContext = getApplication<Application>().applicationContext
 
     private val _state = MutableStateFlow(ProfileState())
@@ -24,7 +28,24 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 _state.value = _state.value.copy(isConnected = connected)
             }
         }
+
+        loadUserRoutes()
     }
+
+    fun loadUserRoutes() = viewModelScope.launch {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
+        _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+        chaseSpringRepository.getRoutesByUser(uid)
+            .onSuccess { routes ->
+                _state.update { it.copy(routes = routes, isLoading = false) }
+            }
+            .onFailure { e ->
+                _state.update { it.copy(errorMessage = e.message, isLoading = false) }
+            }
+    }
+
 
     fun currentUser() = viewModelScope.launch {
         _state.value = _state.value.copy(user = FirebaseAuth.getInstance().currentUser)

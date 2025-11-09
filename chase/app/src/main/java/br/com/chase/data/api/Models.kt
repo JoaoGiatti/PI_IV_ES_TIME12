@@ -47,11 +47,14 @@ data class RouteResponse(
     val creatorId: String,
     val name: String,
     val description: String,
+    val startLocation: String,
+    val endLocation: String,
 
     val points: List<LatLng>,
     val distance: Double,
     val recordTime: String,
-    val top3: List<String>,
+    val top3: List<Ranking>,
+    val competitors: Int,
 
     val bestAverageSpeed: Double,
     val estimatedCalories: Double,
@@ -59,9 +62,19 @@ data class RouteResponse(
     val createdAt: String,
 )
 
-data class RouteAttemptRequest(
-    val userId: String,
-    val time: Double
+data class Ranking(
+    val uid: String,
+    val userName: String,
+    val photoUrl: Double,
+    val totalTime: Double,
+    val avarageSpeed: Double
 )
 
-data class RouteListResponse(val results: List<RouteResponse>)
+data class RouteListResponse(
+    val routes: List<RouteResponse>
+)
+
+data class RouteAttemptRequest(
+    val uid: String,
+    val totalTime: String,
+)

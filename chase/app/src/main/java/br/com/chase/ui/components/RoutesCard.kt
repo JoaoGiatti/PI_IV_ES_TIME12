@@ -28,12 +28,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.chase.R
+import br.com.chase.data.api.RouteResponse
 import br.com.chase.ui.theme.Poppins
 import br.com.chase.ui.theme.PrimaryRainbow
-import br.com.chase.data.local.model.RouteData
 
 @Composable
-fun RoutesCard(route: RouteData.Route) {
+fun RoutesCard(route: RouteResponse) {
     Card(
         modifier = Modifier
             .width(370.dp)
@@ -56,7 +56,7 @@ fun RoutesCard(route: RouteData.Route) {
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = route.location,
+                    text = route.startLocation,
                     fontFamily = Poppins,
                     fontSize = 14.sp
                 )
@@ -75,8 +75,9 @@ fun RoutesCard(route: RouteData.Route) {
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
+
                     Text(
-                        text = route.distance,
+                        text = route.distance.toString(),
                         fontFamily = Poppins,
                         fontSize = 19.sp
                     )
@@ -130,7 +131,7 @@ fun RoutesCard(route: RouteData.Route) {
             )
             Spacer(modifier = Modifier.height(5.dp))
 
-            route.topRunners.forEachIndexed { index, runner ->
+            route.top3.forEachIndexed { index, runner ->
                 Column (
                     modifier = Modifier
                         .fillMaxWidth()
@@ -164,13 +165,13 @@ fun RoutesCard(route: RouteData.Route) {
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = runner.name,
+                                text = runner.userName,
                                 fontFamily = Poppins,
                                 fontSize = 12.sp
                             )
                         }
                         Text(
-                            text = "${runner.time} - ${runner.speed}",
+                            text = "${runner.totalTime} - ${runner.avarageSpeed}",
                             fontFamily = Poppins,
                             fontSize = 12.sp,
                             textAlign = TextAlign.End

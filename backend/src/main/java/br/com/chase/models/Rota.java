@@ -16,10 +16,13 @@ public class Rota {
     private String criadorId;
     private String name;
     private String description;
+    private String startLocation;
+    private String endLocation;
     private List<LatLng> points;
     private double distance;
     private String recordTime;
     private List<Ranking> top3;
+    private int competitors;
     private double bestAverageSpeed;
     private double estimatedCalories;
     private boolean isPublic;
