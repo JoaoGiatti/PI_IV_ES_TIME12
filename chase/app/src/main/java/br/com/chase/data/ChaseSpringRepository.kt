@@ -26,7 +26,7 @@ class ChaseSpringRepository(
         val response = api.getRoutesByUser(uid)
 
         if (response.isSuccessful) {
-            Result.success(response.body()?.routes ?: emptyList())
+            Result.success(response.body() ?: emptyList())
         } else {
             Result.failure(Exception("Error ${response.code()} while fetching routes data"))
         }

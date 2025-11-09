@@ -15,7 +15,7 @@ data class RouteRequest(
 
 data class RouteResponse(
     val rid: String,
-    val creatorId: String,
+    val uid: String,
     val name: String,
     val description: String,
     val startLocation: String,
@@ -29,16 +29,16 @@ data class RouteResponse(
 
     val bestAverageSpeed: Double,
     val estimatedCalories: Double,
-    val isPublic: Boolean,
+    val public: Boolean,
     val createdAt: String,
 )
 
 data class Ranking(
     val uid: String,
     val userName: String,
-    val photoUrl: Double,
-    val totalTime: Double,
-    val avarageSpeed: Double
+    val photoUrl: String?,
+    val totalTime: String,
+    val averageSpeed: Double
 )
 
 data class RouteListResponse(

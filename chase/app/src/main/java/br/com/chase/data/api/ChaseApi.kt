@@ -44,7 +44,7 @@ interface ChaseApi {
 
     // GET - Lista todas as rotas de um usuario pelo UID...
     @GET("routes/users/{uid}")
-    suspend fun getRoutesByUser(@Path("uid") uid: String): Response<RouteListResponse>
+    suspend fun getRoutesByUser(@Path("uid") uid: String): Response<List<RouteResponse>>
 
     // PUT - Atualiza o top3 de uma rota pelo RID => Rota ID...
     @PUT("routes/{rid}/attempt")

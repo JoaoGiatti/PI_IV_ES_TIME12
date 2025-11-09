@@ -171,7 +171,7 @@ fun RoutesCard(route: RouteResponse) {
                             )
                         }
                         Text(
-                            text = "${runner.totalTime} - ${runner.avarageSpeed}",
+                            text = "${runner.totalTime} - ${runner.averageSpeed}",
                             fontFamily = Poppins,
                             fontSize = 12.sp,
                             textAlign = TextAlign.End

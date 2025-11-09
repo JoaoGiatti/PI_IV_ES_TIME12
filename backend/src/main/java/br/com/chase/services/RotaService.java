@@ -4,8 +4,10 @@ import br.com.chase.exceptions.NotFoundException;
 import br.com.chase.models.Rota;
 import br.com.chase.models.LatLng;
 import br.com.chase.models.Ranking;
+import br.com.chase.models.Usuario;
 import br.com.chase.repositories.RotaRepository;
 import br.com.chase.exceptions.BadRequestException;
+import br.com.chase.repositories.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -15,9 +17,11 @@ import java.util.List;
 public class RotaService {
 
     private final RotaRepository rotaRepository;
+    private final UsuarioRepository usuarioRepository; // ✅ precisa injetar isso
 
-    public RotaService(RotaRepository rotaRepository) {
+    public RotaService(RotaRepository rotaRepository, UsuarioRepository usuarioRepository) {
         this.rotaRepository = rotaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     private void validarRota(Rota rota) {
@@ -68,14 +72,18 @@ public class RotaService {
         // Calcular calorias estimadas (simplificado)
         rota.setEstimatedCalories(rota.getDistance() * 60);
 
-        // Criar ranking inicial (criador é o primeiro)
+        // Buscar o usuário real pelo UID
+        Usuario usuario = usuarioRepository.findByUid(rota.getUid());
+
+        // Criar ranking inicial com os dados reais do usuário
         Ranking rankingInicial = new Ranking(
-                rota.getUid(),
-                "Criador da rota", // Pode ser substituído depois pelo nome real vindo do app
-                null, // foto de perfil, caso tenha
+                usuario.getUid(),
+                usuario.getDisplayName(),
+                usuario.getPhotoUrl(),
                 rota.getRecordTime(),
                 velocidadeMedia
         );
+
         rota.setTop3(List.of(rankingInicial));
 
         // Salvar no banco
