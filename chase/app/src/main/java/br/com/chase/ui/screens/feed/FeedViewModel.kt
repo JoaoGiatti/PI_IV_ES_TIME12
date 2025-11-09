@@ -88,9 +88,21 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
                 recordTime = "24:32",
                 competitorsCount = 19,
                 topCompetitors = listOf(
-                    Competitor(1, "Jaime Ferreira", "24:32", "31.5 km/h"),
-                    Competitor(2, "Rafinha Jr", "24:21", "30.3 km/h"),
-                    Competitor(3, "Emanuele Ferreira", "23:46", "29.0 km/h"),
+                    Competitor(
+                        1,
+                        "Jaime Ferreira",
+                        "24:32",
+                        "31.5 km/h"),
+                    Competitor(
+                        2,
+                        "Rafinha Jr",
+                        "24:21",
+                        "30.3 km/h"),
+                    Competitor(
+                        3,
+                        "Emanuele Ferreira",
+                        "23:46",
+                        "29.0 km/h"),
                 )
             ),
             FeedItem(
@@ -99,9 +111,21 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
                 recordTime = "1:35:07",
                 competitorsCount = 17,
                 topCompetitors = listOf(
-                    Competitor(1, "Júlia Mattos", "1:35:07", "35.5 km/h"),
-                    Competitor(2, "Felps Humild", "1:32:22", "35.1 km/h"),
-                    Competitor(3, "Ferrazzz", "1:23:01", "33.2 km/h"),
+                    Competitor(
+                        1,
+                        "Júlia Mattos",
+                        "1:35:07",
+                        "35.5 km/h"),
+                    Competitor(
+                        2,
+                        "Felps Humild",
+                        "1:32:22",
+                        "35.1 km/h"),
+                    Competitor(
+                        3,
+                        "Ferrazzz",
+                        "1:23:01",
+                        "33.2 km/h"),
                 )
             ),
             // Terceiro item, repetindo o primeiro
@@ -111,9 +135,21 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
                 recordTime = "24:32",
                 competitorsCount = 19,
                 topCompetitors = listOf(
-                    Competitor(1, "Jaime Ferreira", "24:32", "31.5 km/h"),
-                    Competitor(2, "Rafinha Jr", "24:21", "30.3 km/h"),
-                    Competitor(3, "Emanuele Ferreira", "23:46", "29.0 km/h"),
+                    Competitor(
+                        1,
+                        "Jaime Ferreira",
+                        "24:32",
+                        "31.5 km/h"),
+                    Competitor(
+                        2,
+                        "Rafinha Jr",
+                        "24:21",
+                        "30.3 km/h"),
+                    Competitor(
+                        3,
+                        "Emanuele Ferreira",
+                        "23:46",
+                        "29.0 km/h"),
                 )
             ),
         )

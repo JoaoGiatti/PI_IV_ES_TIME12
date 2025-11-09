@@ -156,20 +156,23 @@ fun RouteItemCard(item: FeedItem) { // Usa FeedItem
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-
-            // 2. Estatísticas Principais
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                RouteStat(label = "Distância", value = item.distance)
-                RouteStat(label = "Tempo recorde", value = item.recordTime)
-                RouteStat(label = "Competidores", value = item.competitorsCount.toString())
+                StatisticItem(
+                    label = "Distância",
+                    value = item.distance)
+                StatisticItem(
+                    label = "Tempo recorde",
+                    value = item.recordTime)
+                StatisticItem(
+                    label = "Competidores",
+                    value = item.competitorsCount.toString())
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. Lista dos Top Competidores
             item.topCompetitors.forEach { competitor ->
                 CompetitorRow(competitor = competitor)
             }
@@ -178,7 +181,7 @@ fun RouteItemCard(item: FeedItem) { // Usa FeedItem
 }
 
 @Composable
-fun RouteStat(label: String, value: String) {
+fun StatisticItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.Start) {
         Text(
             text = label,
