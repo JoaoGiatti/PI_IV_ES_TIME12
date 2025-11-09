@@ -9,11 +9,11 @@ import java.util.List;
 
 @Getter
 @Setter
-@Document(collection = "rotas")
+@Document(collection = "routes")
 public class Rota {
     @Id
     private String rid;
-    private String criadorId;
+    private String uid;
     private String name;
     private String description;
     private String startLocation;

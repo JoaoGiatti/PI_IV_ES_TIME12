@@ -171,6 +171,7 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                     }
                     if (state.isRecording) {
                         vm.stopRecording()
+                        vm.saveRoute()
                     } else {
                         ensureLocationThenStart(
                             isPrecise = isPrecise,

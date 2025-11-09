@@ -1,5 +1,6 @@
 package br.com.chase.ui.screens.route
 
+import br.com.chase.data.api.RouteRequest
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseUser
 
@@ -8,6 +9,7 @@ data class RouteState (
     val user: FirebaseUser? = null,
     val errorMessage: String? = null,
     val isConnected: Boolean = true,
+    val route: RouteRequest? = null,
 
     // --- campos da rota ---
     val isRecording: Boolean = false,

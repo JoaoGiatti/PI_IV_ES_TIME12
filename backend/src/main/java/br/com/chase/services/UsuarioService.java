@@ -43,6 +43,7 @@ public class UsuarioService {
             throw new UserAlreadyExistsException("Usuário já cadastrado.");
         }
 
+        usuario.setBio("");
         usuario.setCreatedAt(new Date());
         usuario.setMedals(new ArrayList<>());
         usuario.setTotalCalories(0);

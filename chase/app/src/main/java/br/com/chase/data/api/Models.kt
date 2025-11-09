@@ -34,12 +34,14 @@ fun String.cleanUtf8() = this.replace("\u00A0", " ")
 
 
 data class RouteRequest(
-    val userId: String,
+    val uid: String,
     val name: String,
     val description: String,
     val startLocation: String,
     val endLocation: String,
-    val points: List<LatLng>
+    val distance: Double,
+    val recordTime: String,
+    val points: List<LatLng>?
 )
 
 data class RouteResponse(

@@ -6,24 +6,94 @@ import android.location.Location
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.chase.data.ChaseSpringRepository
+import br.com.chase.data.api.RetrofitModule
+import br.com.chase.data.api.RouteRequest
+import br.com.chase.utils.NetworkObserver
 import br.com.chase.utils.locationUpdatesFlow
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import java.util.ArrayDeque
+import kotlin.Double
 
 class RouteViewModel(app: Application) : AndroidViewModel(app) {
+
+    private val chaseSpringRepository = ChaseSpringRepository(RetrofitModule.api)
+    private val appContext = getApplication<Application>().applicationContext
 
     private val fused by lazy { LocationServices.getFusedLocationProviderClient(app) }
 
     private val _state = MutableStateFlow(RouteState())
     val state: StateFlow<RouteState> = _state
+
+    init {
+        // 👇 Começa a observar a conexão assim que o ViewModel é criado
+        viewModelScope.launch {
+            NetworkObserver.observeNetworkStatus(appContext).collectLatest { connected ->
+                _state.value = _state.value.copy(isConnected = connected)
+            }
+        }
+
+        currentUser()
+    }
+
+    fun saveRoute() = viewModelScope.launch {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
+        _state.value = _state.value.copy(isLoading = true, errorMessage = null)
+
+        val mockPath = listOf(
+            LatLng(-23.561732, -46.655981),
+            LatLng(-23.561845, -46.656450),
+            LatLng(-23.561930, -46.656972),
+            LatLng(-23.562102, -46.657431),
+            LatLng(-23.562341, -46.657810)
+        )
+
+        val routeRequest = RouteRequest(
+            uid = uid,
+            name = "cada da jhejhe",
+            description = "cada da jhejhe",
+            startLocation = "cada da jhejhe",
+            endLocation = "cada da jhejhe",
+            distance = 4234.0,
+            recordTime = "12:00:00",
+            points = mockPath
+        )
+        _state.value.copy(route = routeRequest)
+
+        chaseSpringRepository.createRoute(routeRequest)
+            .onSuccess { routeResponse ->
+                _state.value = _state.value.copy(isLoading = false)
+            }
+            .onFailure { e ->
+                _state.value = _state.value.copy(errorMessage = e.message, isLoading = false)
+            }
+    }
+
+    fun currentUser() = viewModelScope.launch {
+        _state.value = _state.value.copy(user = FirebaseAuth.getInstance().currentUser)
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     private var job: Job? = null
     private var lastLocation: Location? = null
@@ -134,4 +204,6 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             )
         }
     }
+
+
 }

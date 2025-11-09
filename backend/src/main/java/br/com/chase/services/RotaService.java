@@ -21,7 +21,7 @@ public class RotaService {
     }
 
     private void validarRota(Rota rota) {
-        if (rota.getCriadorId() == null || rota.getCriadorId().isBlank())
+        if (rota.getUid() == null || rota.getUid().isBlank())
             throw new BadRequestException("O campo 'criadorId' é obrigatório.");
 
         if (rota.getName() == null || rota.getName().isBlank())
@@ -70,7 +70,7 @@ public class RotaService {
 
         // Criar ranking inicial (criador é o primeiro)
         Ranking rankingInicial = new Ranking(
-                rota.getCriadorId(),
+                rota.getUid(),
                 "Criador da rota", // Pode ser substituído depois pelo nome real vindo do app
                 null, // foto de perfil, caso tenha
                 rota.getRecordTime(),
@@ -83,7 +83,7 @@ public class RotaService {
     }
 
     public List<Rota> buscarRotasPorUsuario(String userId) {
-        List<Rota> rotas = rotaRepository.findByCriadorId(userId);
+        List<Rota> rotas = rotaRepository.findByUid(userId);
         if (rotas.isEmpty()) {
             throw new NotFoundException("Nenhuma rota encontrada para o usuário informado.");
         }

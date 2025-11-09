@@ -2,6 +2,7 @@ package br.com.chase.data
 
 import br.com.chase.data.api.ChaseApi
 import br.com.chase.data.api.RouteListResponse
+import br.com.chase.data.api.RouteRequest
 import br.com.chase.data.api.RouteResponse
 import br.com.chase.data.api.UserRequest
 import br.com.chase.data.api.UserResponse
@@ -57,6 +58,18 @@ class ChaseSpringRepository(
                 ?: Result.failure(Exception("Empty user response"))
         } else {
             Result.failure(Exception("Error ${response.code()} while updating user"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun createRoute(route: RouteRequest): Result<RouteResponse> = try {
+        val response = api.createRoute(route)
+        if (response.isSuccessful) {
+            response.body()?.let { Result.success(it) }
+                ?: Result.failure(Exception("Resposta vazia ao criar rota"))
+        } else {
+            Result.failure(Exception("Erro ${response.code()} ao criar rota"))
         }
     } catch (e: Exception) {
         Result.failure(e)

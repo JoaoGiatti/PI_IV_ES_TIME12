@@ -29,6 +29,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             }
         }
 
+        currentUser()
         loadUserRoutes()
         loadUserData()
     }
