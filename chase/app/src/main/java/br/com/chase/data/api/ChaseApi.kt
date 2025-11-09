@@ -20,7 +20,7 @@ interface ChaseApi {
     // PUT - Atualiza um usuario pelo UID
     @PUT("users/{uid}")
     suspend fun updateUser(
-        @Path("uid") uid: String, @Body user: UserRequest
+        @Path("uid") uid: String, @Body user: UserResponse
     ): Response<UserResponse>
 
 

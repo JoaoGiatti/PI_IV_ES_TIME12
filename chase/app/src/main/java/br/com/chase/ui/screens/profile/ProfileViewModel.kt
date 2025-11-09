@@ -30,6 +30,11 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
 
         loadUserRoutes()
+        loadUserData()
+    }
+
+    fun currentUser() = viewModelScope.launch {
+        _state.value = _state.value.copy(user = FirebaseAuth.getInstance().currentUser)
     }
 
     fun loadUserRoutes() = viewModelScope.launch {
@@ -46,36 +51,53 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             }
     }
 
+    fun loadUserData() = viewModelScope.launch {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
 
-    fun currentUser() = viewModelScope.launch {
-        _state.value = _state.value.copy(user = FirebaseAuth.getInstance().currentUser)
+        _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+        chaseSpringRepository.getUser(uid)
+            .onSuccess { userResponse ->
+                _state.update {
+                    it.copy(userData = userResponse, isLoading = false)
+                }
+            }
+            .onFailure { e ->
+                _state.update {
+                    it.copy(errorMessage = e.message, isLoading = false)
+                }
+            }
     }
 
-    fun onAdicionarBiografiaClick() {
-        _state.update { it.copy(editing = true) }
+    fun updateUserBio() = viewModelScope.launch {
+        val currentUser = state.value.userData ?: return@launch
+        val newBio = state.value.editingBio
+
+        _state.update { it.copy(userData = currentUser.copy(bio = newBio)) }
+        _state.update { it.copy(isLoading = true) }
+
+        chaseSpringRepository.updateUser(currentUser.uid, currentUser.copy(bio = newBio))
+            .onSuccess { userResponse ->
+                _state.update { it.copy(userData = userResponse, isLoading = false) }
+            }
+            .onFailure { e ->
+                _state.update { it.copy(errorMessage = e.message, isLoading = false) }
+            }
     }
 
-    fun onBiografiaChange(novoTexto: String) {
-        _state.update { it.copy(bio = novoTexto) }
-    }
 
-    fun onSalvarBiografiaClick() {
-        _state.update { it.copy(editing = false) }
-    }
-
-    fun onEditarBiografiaClick() {
-        _state.update { it.copy(editing = true) }
-    }
-
-    fun onCancelarClick() {
-        _state.update { it.copy(editing = false) }
+    fun onBioChange(newText: String) {
+        _state.update { it.copy(editingBio = newText) }
     }
 
     fun onDismissDialog() {
+        _state.update { it.copy(editing = false) }
         _state.update { it.copy(showDialog = false) }
     }
 
     fun onShowDialog() {
+        _state.update { it.copy(editing = true) }
         _state.update { it.copy(showDialog = true) }
+        _state.update { it.copy(editingBio = it.userData?.bio ?: "")}
     }
 }

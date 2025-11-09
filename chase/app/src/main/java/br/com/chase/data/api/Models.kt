@@ -11,7 +11,7 @@ data class UserRequest(
 )
 
 data class UserResponse(
-    val uid: Long,
+    val uid: String,
     val email: String,
     val displayName: String,
     val photoUrl: String,

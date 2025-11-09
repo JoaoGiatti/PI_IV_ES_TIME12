@@ -32,11 +32,33 @@ class ChaseSpringRepository(
         if (response.isSuccessful) {
             Result.success(response.body()?.routes ?: emptyList())
         } else {
-            Result.failure(Exception("Erro ${response.code()} ao buscar rotas"))
+            Result.failure(Exception("Error ${response.code()} while fetching routes data"))
         }
     } catch (e: Exception) {
         Result.failure(e)
     }
 
+    suspend fun getUser(uid: String): Result<UserResponse> = try {
+        val response = api.getUser(uid)
+        if (response.isSuccessful) {
+            response.body()?.let { Result.success(it) }
+                ?: Result.failure(Exception("Empty user response"))
+        } else {
+            Result.failure(Exception("Error ${response.code()} while fetching user data"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 
+    suspend fun updateUser(uid: String, userResponse: UserResponse): Result<UserResponse> = try {
+        val response = api.updateUser(uid, userResponse)
+        if (response.isSuccessful) {
+            response.body()?.let { Result.success(it) }
+                ?: Result.failure(Exception("Empty user response"))
+        } else {
+            Result.failure(Exception("Error ${response.code()} while updating user"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }

@@ -109,24 +109,15 @@ fun ProfileScreen(
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Bio do Usuário",
-                    fontFamily = Poppins,
-                    fontSize = 15.sp
-                )
-                Spacer(modifier = Modifier.height(35.dp))
+
                 Spacer(modifier = Modifier.height(25.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (state.bio.isEmpty()) {
+                    if (state.userData?.bio.isNullOrEmpty()) {
                         TextButton(
-                            onClick = {
-                                viewModel.onAdicionarBiografiaClick()
-                                viewModel.onShowDialog()
-                            }
+                            onClick = { viewModel.onShowDialog() }
                         ) {
                             Text(
                                 text = "+ Add Bio",
@@ -143,7 +134,7 @@ fun ProfileScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = state.bio,
+                                text = state.userData?.bio ?: "",
                                 fontFamily = Poppins,
                                 fontSize = 14.sp,
                                 color = Color.Black
@@ -154,10 +145,7 @@ fun ProfileScreen(
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             IconButton(
-                                onClick = {
-                                    viewModel.onEditarBiografiaClick()
-                                    viewModel.onShowDialog()
-                                }
+                                onClick = { viewModel.onShowDialog() }
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.editar),
@@ -172,10 +160,7 @@ fun ProfileScreen(
                 // Popup para digitar ou editar a bio
                 if (state.showDialog) {
                     AlertDialog(
-                        onDismissRequest = {
-                            viewModel.onDismissDialog()
-                            viewModel.onDismissDialog()
-                        },
+                        onDismissRequest = { viewModel.onDismissDialog() },
                         title = {
                             Text(
                                 text = "Editar Biografia",
@@ -185,8 +170,8 @@ fun ProfileScreen(
                         },
                         text = {
                             OutlinedTextField(
-                                value = state.bio,
-                                onValueChange = { viewModel.onBiografiaChange(it) },
+                                value = state.editingBio,
+                                onValueChange = { viewModel.onBioChange(it) },
                                 label = {
                                     Text(
                                         text = "Digite sua biografia:",
@@ -202,7 +187,7 @@ fun ProfileScreen(
                         confirmButton = {
                             Button(
                                 onClick = {
-                                    viewModel.onSalvarBiografiaClick()
+                                    viewModel.updateUserBio()
                                     viewModel.onDismissDialog()
                                 },
                                 contentPadding = PaddingValues(),
@@ -234,7 +219,6 @@ fun ProfileScreen(
                         dismissButton = {
                             OutlinedButton(
                                 onClick = {
-                                    viewModel.onCancelarClick()
                                     viewModel.onDismissDialog()
                                 },
                                 border = BorderStroke(
