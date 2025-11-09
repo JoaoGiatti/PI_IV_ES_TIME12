@@ -1,6 +1,6 @@
 package br.com.chase.ui.screens.route
 
-import br.com.chase.data.api.RouteRequest
+import br.com.chase.data.model.RouteRequest
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseUser
 

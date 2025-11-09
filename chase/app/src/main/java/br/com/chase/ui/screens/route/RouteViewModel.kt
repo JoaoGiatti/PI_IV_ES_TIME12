@@ -8,7 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
-import br.com.chase.data.api.RouteRequest
+import br.com.chase.data.model.RouteRequest
 import br.com.chase.utils.NetworkObserver
 import br.com.chase.utils.locationUpdatesFlow
 import com.google.android.gms.location.LocationServices
@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import java.util.ArrayDeque
-import kotlin.Double
 
 class RouteViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -83,17 +82,6 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     fun currentUser() = viewModelScope.launch {
         _state.value = _state.value.copy(user = FirebaseAuth.getInstance().currentUser)
     }
-
-
-
-
-
-
-
-
-
-
-
 
     private var job: Job? = null
     private var lastLocation: Location? = null

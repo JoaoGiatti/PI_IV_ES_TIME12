@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.FirebaseAuthRepository
 import br.com.chase.data.api.RetrofitModule
-import br.com.chase.data.api.toUserRequest
+import br.com.chase.data.model.toUserRequest
 import br.com.chase.utils.NetworkObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

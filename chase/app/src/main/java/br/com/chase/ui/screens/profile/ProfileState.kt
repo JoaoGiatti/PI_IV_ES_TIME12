@@ -1,8 +1,8 @@
 package br.com.chase.ui.screens.profile
 
 
-import br.com.chase.data.api.RouteResponse
-import br.com.chase.data.api.UserResponse
+import br.com.chase.data.model.RouteResponse
+import br.com.chase.data.model.UserResponse
 import com.google.firebase.auth.FirebaseUser
 
 data class ProfileState (

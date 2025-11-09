@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.chase.R
-import br.com.chase.data.api.RouteResponse
+import br.com.chase.data.model.RouteResponse
 import br.com.chase.ui.theme.Poppins
 import br.com.chase.ui.theme.PrimaryRainbow
 
