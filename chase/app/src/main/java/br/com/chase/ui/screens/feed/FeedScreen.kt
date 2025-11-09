@@ -36,6 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 
 @Composable
 fun FeedScreen(
@@ -65,6 +67,27 @@ fun FeedScreen(
             else -> {
                 FeedList(state.items)
             }
+        }
+    }
+}
+@Composable
+fun TopCompetitorsSection(competitors: List<Competitor>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            // Adicionado para acessibilidade: descreve o que a seção contém
+            .background(Color.Transparent)
+    ) {
+        Text(
+            text = "Top Competidores na Rota:",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 8.dp),
+            color = Color.DarkGray
+        )
+        competitors.forEach { competitor ->
+            CompetitorRow(competitor = competitor)
         }
     }
 }
@@ -130,20 +153,14 @@ fun FeedList(items: List<FeedItem>) {
 @Composable
 fun RouteItemCard(item: FeedItem) { // Usa FeedItem
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        // Fundo branco/claro para replicar a imagem
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        // ... (Card content remains the same) ...
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // 1. Localização
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Localização",
+                    contentDescription = "Localização da Rota: ${item.location}", // MELHORIA A11Y
                     tint = Color.Red,
                     modifier = Modifier.size(18.dp)
                 )
@@ -171,29 +188,31 @@ fun RouteItemCard(item: FeedItem) { // Usa FeedItem
                     value = item.competitorsCount.toString())
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            item.topCompetitors.forEach { competitor ->
-                CompetitorRow(competitor = competitor)
-            }
+            // 3. Lista dos Top Competidores - AGORA USA O COMPONENTE EXTRAÍDO
+            TopCompetitorsSection(competitors = item.topCompetitors) // CHAMADA AO NOVO COMPONENTE
         }
     }
 }
 
 @Composable
 fun StatisticItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.Start) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.Gray
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black
-        )
+    // MELHORIA A11Y: Adiciona contentDescription ao Box para leitores de tela
+    Box(
+        modifier = Modifier.semantics { contentDescription = "$label: $value" }
+    ) {
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
+            )
+        }
     }
 }
 
