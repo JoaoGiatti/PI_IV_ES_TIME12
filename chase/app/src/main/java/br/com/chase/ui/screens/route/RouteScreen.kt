@@ -18,7 +18,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.chase.utils.formatDistance
+import br.com.chase.utils.formatElapsed
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -59,8 +60,14 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
     val ctx = LocalContext.current
 
     // ---- permissões (fine/coarse) ----
-    val hasFine = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    val hasCoarse = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    val hasFine = ContextCompat.checkSelfPermission(
+        ctx, Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    val hasCoarse = ContextCompat.checkSelfPermission(
+        ctx, Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
     var hasLocationPermission by remember { mutableStateOf(hasFine || hasCoarse) }
     val isPrecise by remember { derivedStateOf { hasFine } }
 
@@ -78,13 +85,10 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
         vm.setError(
             when {
                 !hasLocationPermission -> "Permissão de localização negada."
-                !fine -> "Permissão concedida como aproximada. Ative 'Precisão exata' para melhor resultado."
+                !fine -> "Permissão concedida como aproximada."
                 else -> null
             }
         )
-        if (hasLocationPermission) {
-            //aaaaaaaaa
-        }
     }
 
     // ---- settings (GPS/Wi-Fi) ----
@@ -108,7 +112,6 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
     }
 
     fun ensureLocationThenStart(
-        isPrecise: Boolean,
         onOk: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -128,19 +131,18 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
 
     // Ajusta a câmera quando o path muda
     LaunchedEffect(state.path) {
-        val path = state.path
-        if (path.isNotEmpty()) {
-            if (path.size == 1) {
+        if (state.path.isNotEmpty()) {
+            if (state.path.size == 1) {
                 cameraState.animate(
-                    CameraUpdateFactory.newLatLngZoom(path.last(), 17f),
-                    600
+                    update = CameraUpdateFactory.newLatLngZoom(state.path.last(), 17f),
+                    durationMs = 600
                 )
             } else {
                 val b = LatLngBounds.builder()
-                path.forEach { b.include(it) }
+                state.path.forEach { b.include(it) }
                 cameraState.animate(
-                    CameraUpdateFactory.newLatLngBounds(b.build(), 100),
-                    600
+                    update = CameraUpdateFactory.newLatLngBounds(b.build(), 100),
+                    durationMs = 600
                 )
             }
         }
@@ -150,9 +152,7 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
     LaunchedEffect(state.isRecording, state.isLoading) {
         if (state.isRecording && state.isLoading) {
             kotlinx.coroutines.delay(8000)
-            if (state.isRecording && state.isLoading) {
-                vm.setError("Ainda sem sinal… verifique se a Localização está ativa e tente ir ao ar livre.")
-            }
+            vm.setError("Ainda sem sinal… verifique se a Localização está ativa e tente ir ao ar livre.")
         }
     }
 
@@ -174,7 +174,6 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                         vm.saveRoute()
                     } else {
                         ensureLocationThenStart(
-                            isPrecise = isPrecise,
                             onOk = { vm.startRecording() },
                             onError = { vm.setError(it) }
                         )
@@ -182,9 +181,11 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                 }
             ) { Text(if (state.isRecording) "Parar" else "Gravar") }
         }
+
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
 
+            // Fundo do maps
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraState,
@@ -219,51 +220,35 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
             ) {
                 Column(Modifier.padding(12.dp)) {
                     val title = when {
-                        state.isRecording && state.isLoading -> "Iniciando GPS…"
+                        state.isRecording && state.isLoading -> "Iniciando…"
                         state.isRecording -> "Gravando…"
                         else -> "Pronto"
                     }
+
                     Text(title, style = MaterialTheme.typography.titleMedium)
+
                     Spacer(Modifier.height(4.dp))
-                    Text("Distância: ${"%.2f".format(state.distanceMeters / 1000)} km")
-                    Text("Tempo: ${formatElapsed(state.elapsedMs)}")
+
+                    Text("Distância: ${formatDistance(state.distanceMeters)}")
+                    Text("Tempo: ${formatElapsed(state.timeOfRoute)}")
+
                     state.errorMessage?.let { msg ->
                         Spacer(Modifier.height(6.dp))
                         Text(msg, color = MaterialTheme.colorScheme.error)
                     }
-                    if (hasLocationPermission && !isPrecise) {
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            "Usando loc aproximada — ative 'Precisão exata' nas perm do app p melhor resultado.",
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
+
                     if (!hasLocationPermission) {
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(onClick = { requestPermissions.launch(permissions) }) {
                             Text("Permitir localização")
                         }
                     }
+                    else if (!isPrecise) {
+                        Spacer(Modifier.height(6.dp))
+                        Text("Usando loc aproximada")
+                    }
                 }
-            }
-
-            // Botão limpar (quando parado)
-            if (state.path.isNotEmpty() && !state.isRecording) {
-                OutlinedButton(
-                    onClick = { vm.clearRoute() },
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp)
-                ) { Text("Limpar") }
             }
         }
     }
-}
-
-private fun formatElapsed(ms: Long): String {
-    val total = ms / 1000
-    val h = total / 3600
-    val m = (total % 3600) / 60
-    val s = total % 60
-    return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%02d:%02d".format(m, s)
 }

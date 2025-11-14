@@ -10,6 +10,7 @@ import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
 import br.com.chase.data.model.RouteRequest
 import br.com.chase.utils.NetworkObserver
+import br.com.chase.utils.formatElapsed
 import br.com.chase.utils.locationUpdatesFlow
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -46,27 +47,17 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun saveRoute() = viewModelScope.launch {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-
         _state.value = _state.value.copy(isLoading = true, errorMessage = null)
 
-        val mockPath = listOf(
-            LatLng(-23.561732, -46.655981),
-            LatLng(-23.561845, -46.656450),
-            LatLng(-23.561930, -46.656972),
-            LatLng(-23.562102, -46.657431),
-            LatLng(-23.562341, -46.657810)
-        )
-
         val routeRequest = RouteRequest(
-            uid = uid,
-            name = "cada da jhejhe",
-            description = "cada da jhejhe",
-            startLocation = "cada da jhejhe",
-            endLocation = "cada da jhejhe",
-            distance = 4234.0,
-            recordTime = "12:00:00",
-            points = mockPath
+            uid = _state.value.user?.uid ?: "sem uid",
+            name = _state.value.user?.displayName ?: "sem nome",
+            description = "por algum lugar no mundo",
+            startLocation = "por algum lugar no mundo",
+            endLocation = "por algum lugar no mundo",
+            distance = _state.value.distanceMeters,
+            recordTime = formatElapsed(_state.value.timeOfRoute),
+            points = _state.value.path
         )
         _state.value.copy(route = routeRequest)
 
@@ -103,7 +94,7 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             errorMessage = null,
             path = emptyList(),
             distanceMeters = 0.0,
-            elapsedMs = 0L
+            timeOfRoute = 0L
         )
 
         // Warm start
@@ -117,7 +108,7 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 locationUpdatesFlow(
                     context = getApplication(),
-                    intervalMs = 3000L,              // ⏳ intervalo maior para reduzir ruído
+                    intervalMs = 3000L,
                     fastestIntervalMs = 1000L,
                     priority = Priority.PRIORITY_HIGH_ACCURACY
                 ).collect { loc ->
@@ -139,26 +130,12 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         _state.value = _state.value.copy(isRecording = false, isLoading = false)
     }
 
-    fun clearRoute() {
-        _state.value = _state.value.copy(
-            path = emptyList(),
-            distanceMeters = 0.0,
-            elapsedMs = 0L,
-            errorMessage = null
-        )
-        lastLocation = null
-        window.clear()
-    }
+    // ---------------------------------------------------------------------------------------------
 
     fun setError(msg: String?) {
         _state.value = _state.value.copy(errorMessage = msg)
     }
 
-    fun setConnected(connected: Boolean) {
-        _state.value = _state.value.copy(isConnected = connected)
-    }
-
-    // --- FILTRO DE LOCALIZAÇÃO ---
     private fun pushLocation(loc: Location) {
         // 1. Descartar pontos ruins
         if (loc.hasAccuracy() && loc.accuracy > 20f) return
@@ -188,10 +165,8 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
                 isLoading = false,
                 path = s.path + LatLng(smoothLoc.latitude, smoothLoc.longitude),
                 distanceMeters = s.distanceMeters + (prev?.distanceTo(smoothLoc) ?: 0f),
-                elapsedMs = now - startMs
+                timeOfRoute = now - startMs
             )
         }
     }
-
-
 }
