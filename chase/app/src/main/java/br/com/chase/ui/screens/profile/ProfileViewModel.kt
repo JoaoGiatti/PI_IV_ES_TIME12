@@ -1,7 +1,6 @@
 package br.com.chase.ui.screens.profile
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
@@ -49,7 +48,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 _state.update { it.copy(routes = routes, isLoading = false) }
             }
             .onFailure { e ->
-                Log.e("ProfileViewModel", "Erro ao carregar rotas: ${e.message}", e)
                 _state.update { it.copy(errorMessage = e.message, isLoading = false) }
             }
     }

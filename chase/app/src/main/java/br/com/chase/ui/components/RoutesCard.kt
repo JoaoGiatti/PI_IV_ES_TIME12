@@ -31,6 +31,8 @@ import br.com.chase.R
 import br.com.chase.data.model.RouteResponse
 import br.com.chase.ui.theme.Poppins
 import br.com.chase.ui.theme.PrimaryRainbow
+import br.com.chase.utils.formatAverageSpeed
+import br.com.chase.utils.formatDistance
 
 @Composable
 fun RoutesCard(route: RouteResponse) {
@@ -77,7 +79,7 @@ fun RoutesCard(route: RouteResponse) {
                     )
 
                     Text(
-                        text = route.distance.toString(),
+                        text = formatDistance(route.distance),
                         fontFamily = Poppins,
                         fontSize = 19.sp
                     )
@@ -171,7 +173,7 @@ fun RoutesCard(route: RouteResponse) {
                             )
                         }
                         Text(
-                            text = "${runner.totalTime} - ${runner.averageSpeed}",
+                            text = "${runner.totalTime} - ${formatAverageSpeed(runner.averageSpeed)}",
                             fontFamily = Poppins,
                             fontSize = 12.sp,
                             textAlign = TextAlign.End

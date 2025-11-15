@@ -15,5 +15,5 @@ data class RouteState (
     val isRecording: Boolean = false,
     val path: List<LatLng> = emptyList(),
     val distanceMeters: Double = 0.0,
-    val elapsedMs: Long = 0L
+    val timeOfRoute: Long = 0L
 )
