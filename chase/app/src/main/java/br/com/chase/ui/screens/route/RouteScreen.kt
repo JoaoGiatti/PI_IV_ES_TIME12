@@ -130,16 +130,16 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
     val cameraState = rememberCameraPositionState()
 
     // Ajusta a câmera quando o path muda
-    LaunchedEffect(state.path) {
-        if (state.path.isNotEmpty()) {
-            if (state.path.size == 1) {
+    LaunchedEffect(state.points) {
+        if (state.points.isNotEmpty()) {
+            if (state.points.size == 1) {
                 cameraState.animate(
-                    update = CameraUpdateFactory.newLatLngZoom(state.path.last(), 17f),
+                    update = CameraUpdateFactory.newLatLngZoom(state.points.last(), 17f),
                     durationMs = 600
                 )
             } else {
                 val b = LatLngBounds.builder()
-                state.path.forEach { b.include(it) }
+                state.points.forEach { b.include(it) }
                 cameraState.animate(
                     update = CameraUpdateFactory.newLatLngBounds(b.build(), 100),
                     durationMs = 600
@@ -170,8 +170,8 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                         return@ExtendedFloatingActionButton
                     }
                     if (state.isRecording) {
-                        vm.stopRecording()
                         vm.saveRoute()
+                        vm.stopRecording()
                     } else {
                         ensureLocationThenStart(
                             onOk = { vm.startRecording() },
@@ -181,7 +181,6 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                 }
             ) { Text(if (state.isRecording) "Parar" else "Gravar") }
         }
-
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
 
@@ -197,16 +196,16 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                     zoomControlsEnabled = false
                 )
             ) {
-                if (state.path.size >= 2) {
-                    Polyline(points = state.path)
+                if (state.points.size >= 2) {
+                    Polyline(points = state.points)
                 }
-                if (state.path.isNotEmpty()) {
+                if (state.points.isNotEmpty()) {
                     Marker(
-                        state = rememberMarkerState(position = state.path.first()),
+                        state = rememberMarkerState(position = state.points.first()),
                         title = "Início"
                     )
                     Marker(
-                        state = rememberMarkerState(position = state.path.last()),
+                        state = rememberMarkerState(position = state.points.last()),
                         title = "Atual"
                     )
                 }
@@ -229,8 +228,9 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
 
                     Spacer(Modifier.height(4.dp))
 
-                    Text("Distância: ${formatDistance(state.distanceMeters)}")
-                    Text("Tempo: ${formatElapsed(state.timeOfRoute)}")
+                    Text("Distância: ${formatDistance(state.distance)}")
+
+                    Text("Tempo: ${formatElapsed(state.time)}")
 
                     state.errorMessage?.let { msg ->
                         Spacer(Modifier.height(6.dp))
@@ -242,10 +242,6 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                         Button(onClick = { requestPermissions.launch(permissions) }) {
                             Text("Permitir localização")
                         }
-                    }
-                    else if (!isPrecise) {
-                        Spacer(Modifier.height(6.dp))
-                        Text("Usando loc aproximada")
                     }
                 }
             }

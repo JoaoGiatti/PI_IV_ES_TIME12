@@ -9,11 +9,18 @@ data class RouteState (
     val user: FirebaseUser? = null,
     val errorMessage: String? = null,
     val isConnected: Boolean = true,
+    val isRecording: Boolean = false,
+
+    // --- campos da rota
     val route: RouteRequest? = null,
 
-    // --- campos da rota ---
-    val isRecording: Boolean = false,
-    val path: List<LatLng> = emptyList(),
-    val distanceMeters: Double = 0.0,
-    val timeOfRoute: Long = 0L
-)
+    val name: String = "Sem nome",
+    val description: String = "Sem descrição",
+
+    val distance: Double = 0.0,
+    val time: Long = 0L,
+
+    val points: List<LatLng> = emptyList(),
+    val startLocation: LatLng? = points.firstOrNull(),
+    val endLocation: LatLng? = points.lastOrNull(),
+    )
