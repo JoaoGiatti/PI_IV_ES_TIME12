@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -66,6 +68,7 @@ fun ProfileScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ){
+        // Fundo arco-iris
         Card(modifier = Modifier
             .fillMaxWidth()
             .height(250.dp)
@@ -83,6 +86,8 @@ fun ProfileScreen(
                 contentAlignment = Alignment.Center
             ) {}
         }
+
+        // Parte das informacoes do usuario nome, bio e level
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -245,6 +250,7 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(25.dp))
 
+                // Parte das informacoes de quilometragem, tempo e gastos
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
@@ -311,12 +317,14 @@ fun ProfileScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(15.dp))
-                HorizontalDivider(
-                    modifier = Modifier.width(350.dp),
-                    color = Color.LightGray
-                )
+
                 Spacer(modifier = Modifier.height(20.dp))
+
+                HorizontalDivider(modifier = Modifier.width(350.dp), color = Color.LightGray)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Parte da listagem de rotas que o usuario possui
                 if (state.routes.isEmpty()){
                     Text(
                         text = "Não há rotas por enquanto",
@@ -325,10 +333,23 @@ fun ProfileScreen(
                         color = Color.Gray
                     )
                 } else {
-                    state.routes.forEach { route ->  RoutesCard(route) }
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        items(state.routes) { route ->
+                            Spacer(modifier = Modifier.height(10.dp))
+                            RoutesCard(route)
+                        }
+                    }
                 }
             }
         }
+
+        // Foto do usuario
         Box(
             modifier = Modifier
                 .offset(y = (-235).dp)

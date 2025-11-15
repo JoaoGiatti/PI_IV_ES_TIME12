@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,9 +40,9 @@ fun RoutesCard(route: RouteResponse) {
     Card(
         modifier = Modifier
             .width(370.dp)
-            .height(270.dp),
+            .wrapContentHeight(),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(Color.White)
     ) {
         Column(
@@ -63,7 +64,9 @@ fun RoutesCard(route: RouteResponse) {
                     fontSize = 14.sp
                 )
             }
+
             Spacer(modifier = Modifier.height(10.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -84,7 +87,9 @@ fun RoutesCard(route: RouteResponse) {
                         fontSize = 19.sp
                     )
                 }
+
                 Spacer(modifier = Modifier.width(18.dp))
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -101,6 +106,7 @@ fun RoutesCard(route: RouteResponse) {
                     )
                 }
                 Spacer(modifier = Modifier.width(18.dp))
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -126,11 +132,11 @@ fun RoutesCard(route: RouteResponse) {
                     )
                 }
             }
+
             Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider(
-                modifier = Modifier.width(320.dp),
-                color = Color.LightGray
-            )
+
+            HorizontalDivider(modifier = Modifier.width(320.dp), color = Color.LightGray)
+
             Spacer(modifier = Modifier.height(5.dp))
 
             route.top3.forEachIndexed { index, runner ->
@@ -159,13 +165,17 @@ fun RoutesCard(route: RouteResponse) {
                                     fontSize = 14.sp
                                 )
                             )
+
                             Spacer(modifier = Modifier.width(10.dp))
+
                             Image(
                                 painter = painterResource(R.drawable.user_sem_foto),
                                 contentDescription = "",
                                 modifier = Modifier.size(30.dp)
                             )
+
                             Spacer(modifier = Modifier.width(10.dp))
+
                             Text(
                                 text = runner.userName,
                                 fontFamily = Poppins,
