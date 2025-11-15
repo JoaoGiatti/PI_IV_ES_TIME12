@@ -6,13 +6,11 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitModule {
 
-    // Se estiver usando o emulador é -> 10.0.2.2
-    // Se for um celular seu ip -> 192.168.x.x
-    private const val IP_ADRESS = "TO DO"
-    private const val BASE_URL = "http://$IP_ADRESS:8080/"
+    private const val BASE_URL = "https://pi-iv-es-time12-xt2c.onrender.com"
 
     private val client by lazy {
         val logger = HttpLoggingInterceptor().apply {
@@ -20,6 +18,9 @@ object RetrofitModule {
         }
         OkHttpClient.Builder()
             .addInterceptor(logger)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
             .build()
     }
 
