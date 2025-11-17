@@ -1,8 +1,10 @@
 package br.com.chase.controllers;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import br.com.chase.models.Rota;
 import br.com.chase.services.RotaService;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
 
@@ -27,8 +29,11 @@ public class RotaController {
     // public ?? buscarRota() {} // TODO
 
     // GET - Lista todas as rotas(publicas)...
-    // @GetMapping("/public")
-    // public ?? buscarRotasPublicas() {} // TODO
+    @GetMapping("/public")
+    public ResponseEntity<List<Rota>> getPublicRoutes(){
+        List<Rota> rotas = rotaService.getPublicRoutes();
+        return ResponseEntity.ok(rotas);
+    }
 
     // GET - Lista todas as rotas de um usuario pelo UID...
     @GetMapping("/users/{uid}")
