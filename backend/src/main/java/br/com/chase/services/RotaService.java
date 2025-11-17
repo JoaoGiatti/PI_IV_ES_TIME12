@@ -78,7 +78,7 @@ public class RotaService {
 
         rota.setCompetitors(1);
         rota.setCreatedAt(new Date());
-        rota.setPublic(true); // padrão
+        rota.setPublic(true);
 
         // Calcular velocidade média (p/ recorde)
         double distanciaKm = rota.getDistance() / 1000.0;
@@ -96,14 +96,6 @@ public class RotaService {
         String creatorName = "Criador da rota";
         String creatorPhoto = null;
 
-        if (creatorUid != null && !creatorUid.isBlank()) {
-            usuarioRepository.findById(creatorUid).ifPresent(usuario -> {
-                // usa lambda para preencher valores se existir
-                // nota: não podemos atribuir diretamente aqui ao escopo externo se usamos lambda;
-                // então vamos capturar via arrays ou reimplementar sem lambda. Vou reimplementar sem lambda abaixo.
-            });
-        }
-
         // Implementação sem lambda para conseguir setar as variáveis acima:
         if (creatorUid != null && !creatorUid.isBlank()) {
             Optional<Usuario> maybeUser = usuarioRepository.findById(creatorUid);
@@ -117,7 +109,7 @@ public class RotaService {
         }
 
         // Criar RotaRecord inicial com dados existentes
-        RotaRecord initial = new RotaRecord(
+        Ranking initial = new Ranking(
                 creatorUid,
                 creatorName,
                 creatorPhoto,
@@ -156,30 +148,27 @@ public class RotaService {
         rotaRepository.delete(rota);
     }
 
-    public Map<String, Object> registerRecord(String rid, String uid, String timeString) {
+    public Map<String, Object> registerRecord(String rid, String uid, String totalTime) {
         Rota route = rotaRepository.findById(rid)
                 .orElseThrow(() -> new RuntimeException("Rota não encontrada."));
 
-        // Converte tempo string em milissegundos para comparação
-        long newTimeMs = parseTimeToMs(timeString);
+        Usuario u = usuarioRepository.findByUid(uid);
 
-        List<RotaRecord> ranking = route.getTop3();
-
-        // Caso não tenha top3 inicial, cria
-        if (ranking == null) ranking = new ArrayList<>();
+        List<Ranking> ranking = route.getTop3();
 
         // Cria o novo record
-        RotaRecord newRecord = new RotaRecord(uid, timeString);
+        double kmPorHora = calcularVelocidadeMedia(route.getDistance(), totalTime);
+        Ranking newRecord = new Ranking(uid, u.getDisplayName(), u.getPhotoUrl(), totalTime, kmPorHora);
 
-        // Coloca na lista TEMPORÁRIA para ordenar
-        List<RotaRecord> temp = new ArrayList<>(ranking);
+
+        List<Ranking> temp = new ArrayList<>(ranking);
         temp.add(newRecord);
 
         // Ordena do menor tempo pro maior
-        temp.sort(Comparator.comparingLong(r -> parseTimeToMs(r.getTimeString())));
+        temp.sort(Comparator.comparingLong(r -> parseTimeToMs(r.getTotalTime())));
 
         // Pega apenas os top 3
-        List<RotaRecord> updatedRanking = temp.stream().limit(3).toList();
+        List<Ranking> updatedRanking = temp.stream().limit(3).toList();
 
         // Verifica se entrou no top 3
         boolean entrou = updatedRanking.contains(newRecord);
@@ -190,6 +179,9 @@ public class RotaService {
 
         // Resposta final
         Map<String, Object> response = new HashMap<>();
+
+        // Soma 1 ao número de competidores
+        route.setCompetitors(route.getCompetitors()+1);
 
         if (!entrou) {
             response.put("message", "Tempo registrado, mas não entrou no top 3.");
@@ -202,5 +194,4 @@ public class RotaService {
         response.put("top3", updatedRanking);
         return response;
     }
-
 }
