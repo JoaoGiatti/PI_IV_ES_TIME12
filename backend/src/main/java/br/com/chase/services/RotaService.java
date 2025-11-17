@@ -1,6 +1,7 @@
 package br.com.chase.services;
 
 import br.com.chase.exceptions.NotFoundException;
+import br.com.chase.exceptions.RotaNotFoundException;
 import br.com.chase.models.Rota;
 import br.com.chase.models.LatLng;
 import br.com.chase.models.Ranking;
