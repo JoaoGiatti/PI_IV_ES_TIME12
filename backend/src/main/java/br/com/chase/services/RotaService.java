@@ -101,4 +101,9 @@ public class RotaService {
     public List<Rota> getPublicRoutes(){
         return rotaRepository.findByIsPublicTrue();
     }
+
+    public Rota getRotaById(String rid) {
+        return rotaRepository.findById(rid)
+                .orElseThrow(() -> new RotaNotFoundException("Rota com ID " + rid + " não encontrada."));
+    }
 }

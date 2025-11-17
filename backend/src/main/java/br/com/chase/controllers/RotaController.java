@@ -1,5 +1,7 @@
 package br.com.chase.controllers;
 
+import br.com.chase.exceptions.RotaNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import br.com.chase.models.Rota;
@@ -7,6 +9,7 @@ import br.com.chase.services.RotaService;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/routes")
@@ -24,9 +27,20 @@ public class RotaController {
         return rotaService.criarRota(rota);
     }
 
-    // GET - Mostra detalhes de uma rota pelo RID => Rota ID...
-    //@GetMapping("/{rid}")
-    // public ?? buscarRota() {} // TODO
+    @GetMapping("/{rid}")
+    public ResponseEntity<?> getRotaById(@PathVariable String rid) {
+        try {
+            Rota rota = rotaService.getRotaById(rid);
+            return ResponseEntity.ok(rota);
+        } catch (RotaNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "message", e.getMessage(),
+                            "routeId", rid
+                    ));
+        }
+    }
 
     // GET - Lista todas as rotas(publicas)...
     @GetMapping("/public")
