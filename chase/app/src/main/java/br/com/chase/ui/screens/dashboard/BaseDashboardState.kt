@@ -7,6 +7,6 @@ data class BaseDashboardState(
     val user: FirebaseUser? = null,
     val errorMessage: String? = null,
     val isConnected: Boolean = true,
-    val selectedTab: Int = 0,
+    val selectedTab: Int = 1,
     val topBarVisible: Boolean = true
 )
