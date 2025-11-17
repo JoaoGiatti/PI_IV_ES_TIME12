@@ -58,7 +58,7 @@ public class RotaService {
             throw new BadRequestException("A lista de pontos não pode estar vazia.");
     }
 
-    double dis
+
     private double calcularVelocidadeMedia(double distancia, String tempoRecorde) {
         try {
             String[] partes = tempoRecorde.split(":");
@@ -81,8 +81,9 @@ public class RotaService {
         rota.setPublic(true); // padrão
 
         // Calcular velocidade média (p/ recorde)
+        double distanciaKm = rota.getDistance() / 1000.0;
         double velocidadeMedia = calcularVelocidadeMedia(
-                rota.getDistance(),
+                distanciaKm,
                 rota.getRecordTime()
         );
         rota.setBestAverageSpeed(velocidadeMedia);
