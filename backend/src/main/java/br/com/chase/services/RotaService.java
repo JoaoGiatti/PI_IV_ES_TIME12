@@ -58,6 +58,7 @@ public class RotaService {
             throw new BadRequestException("A lista de pontos não pode estar vazia.");
     }
 
+    double dis
     private double calcularVelocidadeMedia(double distancia, String tempoRecorde) {
         try {
             String[] partes = tempoRecorde.split(":");
