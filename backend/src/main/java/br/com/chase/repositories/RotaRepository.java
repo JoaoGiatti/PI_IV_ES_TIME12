@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface RotaRepository extends MongoRepository<Rota, String> {
     List<Rota> findByUid(String criadorId);
+    List<Rota> findByIsPublicTrue();
 }

@@ -1,10 +1,14 @@
 package br.com.chase.controllers;
 
+import br.com.chase.exceptions.RotaNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import br.com.chase.models.Rota;
 import br.com.chase.services.RotaService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/routes")
@@ -22,13 +26,46 @@ public class RotaController {
         return rotaService.criarRota(rota);
     }
 
-    // GET - Mostra detalhes de uma rota pelo RID => Rota ID...
-    //@GetMapping("/{rid}")
-    // public ?? buscarRota() {} // TODO
+    // GET - Busca detalhes de uma rota
+    @GetMapping("/{rid}")
+    public ResponseEntity<?> getRotaById(@PathVariable String rid) {
+        try {
+            Rota rota = rotaService.getRotaById(rid);
+            return ResponseEntity.ok(rota);
+        } catch (RotaNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "message", e.getMessage(),
+                            "routeId", rid
+                    ));
+        }
+    }
+
+    @DeleteMapping("/{rid}")
+    public ResponseEntity<?> deletarRota(@PathVariable String rid) {
+        try {
+            rotaService.deletarRota(rid);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Rota removida com sucesso!",
+                    "routeId", rid
+            ));
+        } catch (RotaNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "message", e.getMessage(),
+                            "routeId", rid
+                    ));
+        }
+    }
 
     // GET - Lista todas as rotas(publicas)...
-    // @GetMapping("/public")
-    // public ?? buscarRotasPublicas() {} // TODO
+    @GetMapping("/public")
+    public ResponseEntity<List<Rota>> getPublicRoutes(){
+        List<Rota> rotas = rotaService.getPublicRoutes();
+        return ResponseEntity.ok(rotas);
+    }
 
     // GET - Lista todas as rotas de um usuario pelo UID...
     @GetMapping("/users/{uid}")
@@ -37,6 +74,12 @@ public class RotaController {
     }
 
     // PUT - Atualiza o top3 de uma rota pelo RID => Rota ID...
-    // @PutMapping("/{rid}/attempt")
-    // public ?? atualizarRota() {}  // TODO
+    @PostMapping("/{rid}/record")
+    public ResponseEntity<?> registerRecord(
+            @PathVariable String rid,
+            @RequestParam String uid,
+            @RequestParam String timeString
+    ) {
+        return ResponseEntity.ok(rotaService.registerRecord(rid, uid, timeString));
+    }
 }

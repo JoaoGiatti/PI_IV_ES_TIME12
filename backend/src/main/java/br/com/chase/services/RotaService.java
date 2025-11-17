@@ -1,17 +1,14 @@
 package br.com.chase.services;
 
 import br.com.chase.exceptions.NotFoundException;
-import br.com.chase.models.Rota;
-import br.com.chase.models.LatLng;
-import br.com.chase.models.Ranking;
-import br.com.chase.models.Usuario;
+import br.com.chase.exceptions.RotaNotFoundException;
+import br.com.chase.models.*;
 import br.com.chase.repositories.RotaRepository;
 import br.com.chase.exceptions.BadRequestException;
 import br.com.chase.repositories.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RotaService {
@@ -22,6 +19,25 @@ public class RotaService {
     public RotaService(RotaRepository rotaRepository, UsuarioRepository usuarioRepository) {
         this.rotaRepository = rotaRepository;
         this.usuarioRepository = usuarioRepository;
+    }
+
+    private long parseTimeToMs(String timeString) {
+        String[] parts = timeString.split(":");
+
+        if (parts.length == 2) {
+            int minutes = Integer.parseInt(parts[0]);
+            int seconds = Integer.parseInt(parts[1]);
+            return (minutes * 60L + seconds) * 1000;
+        }
+
+        if (parts.length == 3) {
+            int hours = Integer.parseInt(parts[0]);
+            int minutes = Integer.parseInt(parts[1]);
+            int seconds = Integer.parseInt(parts[2]);
+            return (hours * 3600L + minutes * 60L + seconds) * 1000;
+        }
+
+        throw new RuntimeException("Formato de tempo inválido: " + timeString);
     }
 
     private void validarRota(Rota rota) {
@@ -42,6 +58,7 @@ public class RotaService {
             throw new BadRequestException("A lista de pontos não pode estar vazia.");
     }
 
+
     private double calcularVelocidadeMedia(double distancia, String tempoRecorde) {
         try {
             String[] partes = tempoRecorde.split(":");
@@ -59,12 +76,14 @@ public class RotaService {
     public Rota criarRota(Rota rota) {
         validarRota(rota);
 
+        rota.setCompetitors(1);
         rota.setCreatedAt(new Date());
-        rota.setPublic(true); // padrão
+        rota.setPublic(true);
 
-        // Calcular velocidade média
+        // Calcular velocidade média (p/ recorde)
+        double distanciaKm = rota.getDistance() / 1000.0;
         double velocidadeMedia = calcularVelocidadeMedia(
-                rota.getDistance(),
+                distanciaKm,
                 rota.getRecordTime()
         );
         rota.setBestAverageSpeed(velocidadeMedia);
@@ -72,19 +91,34 @@ public class RotaService {
         // Calcular calorias estimadas (simplificado)
         rota.setEstimatedCalories(rota.getDistance() * 60);
 
-        // Buscar o usuário real pelo UID
-        Usuario usuario = usuarioRepository.findByUid(rota.getUid());
+        // Tentar buscar o usuário real pelo UID (se existir)
+        String creatorUid = rota.getUid();
+        String creatorName = "Criador da rota";
+        String creatorPhoto = null;
 
-        // Criar ranking inicial com os dados reais do usuário
-        Ranking rankingInicial = new Ranking(
-                usuario.getUid(),
-                usuario.getDisplayName(),
-                usuario.getPhotoUrl(),
+        // Implementação sem lambda para conseguir setar as variáveis acima:
+        if (creatorUid != null && !creatorUid.isBlank()) {
+            Optional<Usuario> maybeUser = usuarioRepository.findById(creatorUid);
+            if (maybeUser.isPresent()) {
+                Usuario usuario = maybeUser.get();
+                creatorName = usuario.getDisplayName() != null && !usuario.getDisplayName().isBlank()
+                        ? usuario.getDisplayName()
+                        : creatorName;
+                creatorPhoto = usuario.getPhotoUrl();
+            }
+        }
+
+        // Criar RotaRecord inicial com dados existentes
+        Ranking initial = new Ranking(
+                creatorUid,
+                creatorName,
+                creatorPhoto,
                 rota.getRecordTime(),
                 velocidadeMedia
         );
 
-        rota.setTop3(List.of(rankingInicial));
+        // Inicializa top3 com o criador como 1º colocado
+        rota.setTop3(List.of(initial));
 
         // Salvar no banco
         return rotaRepository.save(rota);
@@ -96,5 +130,68 @@ public class RotaService {
             throw new NotFoundException("Nenhuma rota encontrada para o usuário informado.");
         }
         return rotas;
+    }
+
+    public List<Rota> getPublicRoutes(){
+        return rotaRepository.findByIsPublicTrue();
+    }
+
+    public Rota getRotaById(String rid) {
+        return rotaRepository.findById(rid)
+                .orElseThrow(() -> new RotaNotFoundException("Rota com ID " + rid + " não encontrada."));
+    }
+
+    public void deletarRota(String rid) {
+        Rota rota = rotaRepository.findById(rid)
+                .orElseThrow(() -> new RotaNotFoundException("Rota com ID " + rid + " não encontrada."));
+
+        rotaRepository.delete(rota);
+    }
+
+    public Map<String, Object> registerRecord(String rid, String uid, String totalTime) {
+        Rota route = rotaRepository.findById(rid)
+                .orElseThrow(() -> new RuntimeException("Rota não encontrada."));
+
+        Usuario u = usuarioRepository.findByUid(uid);
+
+        List<Ranking> ranking = route.getTop3();
+
+        // Cria o novo record
+        double kmPorHora = calcularVelocidadeMedia(route.getDistance(), totalTime);
+        Ranking newRecord = new Ranking(uid, u.getDisplayName(), u.getPhotoUrl(), totalTime, kmPorHora);
+
+
+        List<Ranking> temp = new ArrayList<>(ranking);
+        temp.add(newRecord);
+
+        // Ordena do menor tempo pro maior
+        temp.sort(Comparator.comparingLong(r -> parseTimeToMs(r.getTotalTime())));
+
+        // Pega apenas os top 3
+        List<Ranking> updatedRanking = temp.stream().limit(3).toList();
+
+        // Verifica se entrou no top 3
+        boolean entrou = updatedRanking.contains(newRecord);
+
+        // Atualiza a rota (somente os top3)
+        route.setTop3(updatedRanking);
+        rotaRepository.save(route);
+
+        // Resposta final
+        Map<String, Object> response = new HashMap<>();
+
+        // Soma 1 ao número de competidores
+        route.setCompetitors(route.getCompetitors()+1);
+
+        if (!entrou) {
+            response.put("message", "Tempo registrado, mas não entrou no top 3.");
+            response.put("position", temp.indexOf(newRecord) + 1);
+            return response;
+        }
+
+        response.put("message", "Novo tempo registrado!");
+        response.put("position", updatedRanking.indexOf(newRecord) + 1);
+        response.put("top3", updatedRanking);
+        return response;
     }
 }

@@ -14,14 +14,19 @@ import br.com.chase.utils.formatElapsed
 import br.com.chase.utils.locationUpdatesFlow
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
 import java.lang.System.currentTimeMillis
 import java.util.ArrayDeque
 
@@ -47,22 +52,23 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun saveRoute() = viewModelScope.launch {
-        _state.value = _state.value.copy(isLoading = true, errorMessage = null)
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
 
         val routeRequest = RouteRequest(
-            uid = _state.value.user?.uid ?: "sem uid",
-            name = _state.value.user?.displayName ?: "sem nome",
-            description = "por algum lugar no mundo",
-            startLocation = "por algum lugar no mundo",
-            endLocation = "por algum lugar no mundo",
-            distance = _state.value.distanceMeters,
-            recordTime = formatElapsed(_state.value.timeOfRoute),
-            points = _state.value.path
+            uid = uid,
+            name = _state.value.name,
+            description = _state.value.description,
+            startLocation = "Endereço desconhecido",
+            endLocation = "Endereço desconhecido",
+            distance = _state.value.distance,
+            recordTime = formatElapsed(_state.value.time),
+            points = _state.value.points
         )
-        _state.value.copy(route = routeRequest)
+
+        _state.value = _state.value.copy(route = routeRequest, isLoading = true, errorMessage = null)
 
         chaseSpringRepository.createRoute(routeRequest)
-            .onSuccess { routeResponse ->
+            .onSuccess {
                 _state.value = _state.value.copy(isLoading = false)
             }
             .onFailure { e ->
@@ -92,9 +98,9 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             isRecording = true,
             isLoading = true,
             errorMessage = null,
-            path = emptyList(),
-            distanceMeters = 0.0,
-            timeOfRoute = 0L
+            points = emptyList(),
+            distance = 0.0,
+            time = 0L
         )
 
         // Warm start
@@ -127,7 +133,27 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     fun stopRecording() {
         job?.cancel()
         job = null
-        _state.value = _state.value.copy(isRecording = false, isLoading = false)
+        clearRouteInfo()
+    }
+
+    fun clearRouteInfo() {
+        _state.value = _state.value.copy(
+            isLoading = false,
+            isRecording = false,
+            errorMessage = null,
+
+            route = null,
+
+            name = "Sem nome",
+            description = "Sem descrição",
+
+            distance = 0.0,
+            time = 0L,
+
+            points = emptyList(),
+            startLocation = null,
+            endLocation = null,
+        )
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -163,9 +189,9 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         _state.value = _state.value.let { s ->
             s.copy(
                 isLoading = false,
-                path = s.path + LatLng(smoothLoc.latitude, smoothLoc.longitude),
-                distanceMeters = s.distanceMeters + (prev?.distanceTo(smoothLoc) ?: 0f),
-                timeOfRoute = now - startMs
+                points = s.points + LatLng(smoothLoc.latitude, smoothLoc.longitude),
+                distance = s.distance + (prev?.distanceTo(smoothLoc) ?: 0f),
+                time = now - startMs
             )
         }
     }
