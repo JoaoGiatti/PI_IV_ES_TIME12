@@ -2,17 +2,13 @@ package br.com.chase.services;
 
 import br.com.chase.exceptions.NotFoundException;
 import br.com.chase.exceptions.RotaNotFoundException;
-import br.com.chase.models.Rota;
-import br.com.chase.models.LatLng;
-import br.com.chase.models.Ranking;
-import br.com.chase.models.Usuario;
+import br.com.chase.models.*;
 import br.com.chase.repositories.RotaRepository;
 import br.com.chase.exceptions.BadRequestException;
 import br.com.chase.repositories.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RotaService {
@@ -23,6 +19,25 @@ public class RotaService {
     public RotaService(RotaRepository rotaRepository, UsuarioRepository usuarioRepository) {
         this.rotaRepository = rotaRepository;
         this.usuarioRepository = usuarioRepository;
+    }
+
+    private long parseTimeToMs(String timeString) {
+        String[] parts = timeString.split(":");
+
+        if (parts.length == 2) {
+            int minutes = Integer.parseInt(parts[0]);
+            int seconds = Integer.parseInt(parts[1]);
+            return (minutes * 60L + seconds) * 1000;
+        }
+
+        if (parts.length == 3) {
+            int hours = Integer.parseInt(parts[0]);
+            int minutes = Integer.parseInt(parts[1]);
+            int seconds = Integer.parseInt(parts[2]);
+            return (hours * 3600L + minutes * 60L + seconds) * 1000;
+        }
+
+        throw new RuntimeException("Formato de tempo inválido: " + timeString);
     }
 
     private void validarRota(Rota rota) {
@@ -60,10 +75,11 @@ public class RotaService {
     public Rota criarRota(Rota rota) {
         validarRota(rota);
 
+        rota.setCompetitors(1);
         rota.setCreatedAt(new Date());
         rota.setPublic(true); // padrão
 
-        // Calcular velocidade média
+        // Calcular velocidade média (p/ recorde)
         double velocidadeMedia = calcularVelocidadeMedia(
                 rota.getDistance(),
                 rota.getRecordTime()
@@ -73,19 +89,42 @@ public class RotaService {
         // Calcular calorias estimadas (simplificado)
         rota.setEstimatedCalories(rota.getDistance() * 60);
 
-        // Buscar o usuário real pelo UID
-        Usuario usuario = usuarioRepository.findByUid(rota.getUid());
+        // Tentar buscar o usuário real pelo UID (se existir)
+        String creatorUid = rota.getUid();
+        String creatorName = "Criador da rota";
+        String creatorPhoto = null;
 
-        // Criar ranking inicial com os dados reais do usuário
-        Ranking rankingInicial = new Ranking(
-                usuario.getUid(),
-                usuario.getDisplayName(),
-                usuario.getPhotoUrl(),
+        if (creatorUid != null && !creatorUid.isBlank()) {
+            usuarioRepository.findById(creatorUid).ifPresent(usuario -> {
+                // usa lambda para preencher valores se existir
+                // nota: não podemos atribuir diretamente aqui ao escopo externo se usamos lambda;
+                // então vamos capturar via arrays ou reimplementar sem lambda. Vou reimplementar sem lambda abaixo.
+            });
+        }
+
+        // Implementação sem lambda para conseguir setar as variáveis acima:
+        if (creatorUid != null && !creatorUid.isBlank()) {
+            Optional<Usuario> maybeUser = usuarioRepository.findById(creatorUid);
+            if (maybeUser.isPresent()) {
+                Usuario usuario = maybeUser.get();
+                creatorName = usuario.getDisplayName() != null && !usuario.getDisplayName().isBlank()
+                        ? usuario.getDisplayName()
+                        : creatorName;
+                creatorPhoto = usuario.getPhotoUrl();
+            }
+        }
+
+        // Criar RotaRecord inicial com dados existentes
+        RotaRecord initial = new RotaRecord(
+                creatorUid,
+                creatorName,
+                creatorPhoto,
                 rota.getRecordTime(),
                 velocidadeMedia
         );
 
-        rota.setTop3(List.of(rankingInicial));
+        // Inicializa top3 com o criador como 1º colocado
+        rota.setTop3(List.of(initial));
 
         // Salvar no banco
         return rotaRepository.save(rota);
@@ -114,4 +153,52 @@ public class RotaService {
 
         rotaRepository.delete(rota);
     }
+
+    public Map<String, Object> registerRecord(String rid, String uid, String timeString) {
+        Rota route = rotaRepository.findById(rid)
+                .orElseThrow(() -> new RuntimeException("Rota não encontrada."));
+
+        // Converte tempo string em milissegundos para comparação
+        long newTimeMs = parseTimeToMs(timeString);
+
+        List<RotaRecord> ranking = route.getTop3();
+
+        // Caso não tenha top3 inicial, cria
+        if (ranking == null) ranking = new ArrayList<>();
+
+        // Cria o novo record
+        RotaRecord newRecord = new RotaRecord(uid, timeString);
+
+        // Coloca na lista TEMPORÁRIA para ordenar
+        List<RotaRecord> temp = new ArrayList<>(ranking);
+        temp.add(newRecord);
+
+        // Ordena do menor tempo pro maior
+        temp.sort(Comparator.comparingLong(r -> parseTimeToMs(r.getTimeString())));
+
+        // Pega apenas os top 3
+        List<RotaRecord> updatedRanking = temp.stream().limit(3).toList();
+
+        // Verifica se entrou no top 3
+        boolean entrou = updatedRanking.contains(newRecord);
+
+        // Atualiza a rota (somente os top3)
+        route.setTop3(updatedRanking);
+        rotaRepository.save(route);
+
+        // Resposta final
+        Map<String, Object> response = new HashMap<>();
+
+        if (!entrou) {
+            response.put("message", "Tempo registrado, mas não entrou no top 3.");
+            response.put("position", temp.indexOf(newRecord) + 1);
+            return response;
+        }
+
+        response.put("message", "Novo tempo registrado!");
+        response.put("position", updatedRanking.indexOf(newRecord) + 1);
+        response.put("top3", updatedRanking);
+        return response;
+    }
+
 }

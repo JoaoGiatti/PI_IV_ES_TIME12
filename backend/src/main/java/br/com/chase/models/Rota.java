@@ -21,10 +21,11 @@ public class Rota {
     private List<LatLng> points;
     private double distance;
     private String recordTime;
-    private List<Ranking> top3;
+    private List<RotaRecord> top3;
     private int competitors;
     private double bestAverageSpeed;
     private double estimatedCalories;
     private boolean isPublic;
     private Date createdAt;
+
 }
