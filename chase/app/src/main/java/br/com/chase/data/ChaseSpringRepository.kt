@@ -95,4 +95,18 @@ class ChaseSpringRepository(
         Log.e(TAG, "Exception while creating route", e)
         Result.failure(e)
     }
+
+    suspend fun getPublicRoutes(): Result<List<RouteResponse>> = try {
+        val response = api.getPublicRoutes()
+
+        if (response.isSuccessful) {
+            Result.success(response.body() ?: emptyList())
+        } else {
+            Log.e(TAG, "Error ${response.code()} while fetching public routes: ${response.errorBody()?.string()}")
+            Result.failure(Exception("Error ${response.code()} while fetching public routes"))
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Exception while fetching public routes", e)
+        Result.failure(e)
+    }
 }

@@ -40,7 +40,7 @@ interface ChaseApi {
 
     // GET - Lista todas as rotas(publicas)...
     @GET("routes/public")
-    suspend fun getPublicRoutes(): Response<RouteListResponse>
+    suspend fun getPublicRoutes(): Response<List<RouteResponse>>
 
     // GET - Lista todas as rotas de um usuario pelo UID...
     @GET("routes/users/{uid}")
