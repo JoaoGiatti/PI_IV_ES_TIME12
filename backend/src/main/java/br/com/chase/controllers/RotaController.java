@@ -27,11 +27,30 @@ public class RotaController {
         return rotaService.criarRota(rota);
     }
 
+    // GET - Busca detalhes de uma rota
     @GetMapping("/{rid}")
     public ResponseEntity<?> getRotaById(@PathVariable String rid) {
         try {
             Rota rota = rotaService.getRotaById(rid);
             return ResponseEntity.ok(rota);
+        } catch (RotaNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "message", e.getMessage(),
+                            "routeId", rid
+                    ));
+        }
+    }
+
+    @DeleteMapping("/{rid}")
+    public ResponseEntity<?> deletarRota(@PathVariable String rid) {
+        try {
+            rotaService.deletarRota(rid);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Rota removida com sucesso!",
+                    "routeId", rid
+            ));
         } catch (RotaNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)

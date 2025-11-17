@@ -107,4 +107,11 @@ public class RotaService {
         return rotaRepository.findById(rid)
                 .orElseThrow(() -> new RotaNotFoundException("Rota com ID " + rid + " não encontrada."));
     }
+
+    public void deletarRota(String rid) {
+        Rota rota = rotaRepository.findById(rid)
+                .orElseThrow(() -> new RotaNotFoundException("Rota com ID " + rid + " não encontrada."));
+
+        rotaRepository.delete(rota);
+    }
 }
