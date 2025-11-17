@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.chase.ui.components.LoadingIndicator
 import br.com.chase.utils.formatDistance
 import br.com.chase.utils.formatElapsed
 import com.google.android.gms.common.api.ResolvableApiException
@@ -182,65 +183,78 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
             ) { Text(if (state.isRecording) "Parar" else "Gravar") }
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
 
-            // Fundo do maps
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraState,
-                properties = MapProperties(
-                    isMyLocationEnabled = hasLocationPermission
-                ),
-                uiSettings = MapUiSettings(
-                    myLocationButtonEnabled = true,
-                    zoomControlsEnabled = false
-                )
-            ) {
-                if (state.points.size >= 2) {
-                    Polyline(points = state.points)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            when {
+                state.isLoading -> {
+                    LoadingIndicator()
                 }
-                if (state.points.isNotEmpty()) {
-                    Marker(
-                        state = rememberMarkerState(position = state.points.first()),
-                        title = "Início"
-                    )
-                    Marker(
-                        state = rememberMarkerState(position = state.points.last()),
-                        title = "Atual"
-                    )
-                }
-            }
-
-            // Painel de status
-            Card(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(12.dp)
-            ) {
-                Column(Modifier.padding(12.dp)) {
-                    val title = when {
-                        state.isRecording && state.isLoading -> "Iniciando…"
-                        state.isRecording -> "Gravando…"
-                        else -> "Pronto"
-                    }
-
-                    Text(title, style = MaterialTheme.typography.titleMedium)
-
-                    Spacer(Modifier.height(4.dp))
-
-                    Text("Distância: ${formatDistance(state.distance)}")
-
-                    Text("Tempo: ${formatElapsed(state.time)}")
-
-                    state.errorMessage?.let { msg ->
-                        Spacer(Modifier.height(6.dp))
-                        Text(msg, color = MaterialTheme.colorScheme.error)
-                    }
-
+                else -> {
                     if (!hasLocationPermission) {
-                        Spacer(Modifier.height(6.dp))
-                        Button(onClick = { requestPermissions.launch(permissions) }) {
-                            Text("Permitir localização")
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                        ) {
+                            Text("Permissão de localização necessária")
+                            Spacer(Modifier.height(10.dp))
+                            Button(onClick = { requestPermissions.launch(permissions) }) {
+                                Text("Permitir localização")
+                            }
+                        }
+                        return@Box
+                    }
+
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraState,
+                        properties = MapProperties(
+                            isMyLocationEnabled = hasLocationPermission
+                        ),
+                        uiSettings = MapUiSettings(
+                            myLocationButtonEnabled = true,
+                            zoomControlsEnabled = false
+                        )
+                    ) {
+                        if (state.points.size >= 2) {
+                            Polyline(points = state.points)
+                        }
+                        if (state.points.isNotEmpty()) {
+                            Marker(
+                                state = rememberMarkerState(position = state.points.first()),
+                                title = "Início"
+                            )
+                            Marker(
+                                state = rememberMarkerState(position = state.points.last()),
+                                title = "Atual"
+                            )
+                        }
+                    }
+
+                    // Painel superior
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(12.dp)
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            val title = when {
+                                state.isRecording -> "Gravando…"
+                                else -> "Pronto"
+                            }
+
+                            Text(title, style = MaterialTheme.typography.titleMedium)
+
+                            Spacer(Modifier.height(4.dp))
+
+                            Text("Distância: ${formatDistance(state.distance)}")
+                            Text("Tempo: ${formatElapsed(state.time)}")
                         }
                     }
                 }
