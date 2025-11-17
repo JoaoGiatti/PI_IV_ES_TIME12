@@ -97,4 +97,8 @@ public class RotaService {
         }
         return rotas;
     }
+
+    public List<Rota> getPublicRoutes(){
+        return rotaRepository.findByIsPublicTrue();
+    }
 }
