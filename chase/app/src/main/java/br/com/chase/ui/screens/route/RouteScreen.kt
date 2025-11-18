@@ -3,28 +3,27 @@ package br.com.chase.ui.screens.route
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.chase.ui.components.LoadingIndicator
 import br.com.chase.utils.formatDistance
 import br.com.chase.utils.formatElapsed
 import com.google.android.gms.common.api.ResolvableApiException
@@ -44,7 +42,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -56,110 +53,85 @@ import com.google.maps.android.compose.rememberMarkerState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RouteScreen(vm: RouteViewModel = viewModel()) {
-    val state by vm.state.collectAsState()
 
+    val state by vm.state.collectAsState()
     val ctx = LocalContext.current
 
-    // ---- permissões (fine/coarse) ----
+    // -----------------------------------------------
+    // Permissões de localização
+    // -----------------------------------------------
     val hasFine = ContextCompat.checkSelfPermission(
         ctx, Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
-    val hasCoarse = ContextCompat.checkSelfPermission(
-        ctx, Manifest.permission.ACCESS_COARSE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
+    var hasLocationPermission by remember { mutableStateOf(hasFine) }
 
-    var hasLocationPermission by remember { mutableStateOf(hasFine || hasCoarse) }
-    val isPrecise by remember { derivedStateOf { hasFine } }
-
-    val permissions = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
-
-    val requestPermissions = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
     ) { granted ->
-        val fine = granted[Manifest.permission.ACCESS_FINE_LOCATION] == true
-        val coarse = granted[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        hasLocationPermission = fine || coarse
-        vm.setError(
-            when {
-                !hasLocationPermission -> "Permissão de localização negada."
-                !fine -> "Permissão concedida como aproximada."
-                else -> null
-            }
-        )
+        hasLocationPermission = granted
+        if (!granted) vm.clearError()
     }
 
-    // ---- settings (GPS/Wi-Fi) ----
+    // -----------------------------------------------
+    // Ajuste de GPS (LocationSettings)
+    // -----------------------------------------------
     val settingsClient = remember { LocationServices.getSettingsClient(ctx) }
-    val locationRequest = remember(isPrecise) {
-        LocationRequest.Builder(1000L)
-            .setMinUpdateIntervalMillis(500L)
-            .setPriority(if (isPrecise) Priority.PRIORITY_HIGH_ACCURACY else Priority.PRIORITY_BALANCED_POWER_ACCURACY)
-            .build()
-    }
-    val settingsRequest = remember(locationRequest) {
-        LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build()
-    }
-
-    val resolutionLauncher = rememberLauncherForActivityResult(StartIntentSenderForResult()) { result ->
+    val resolutionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             vm.startRecording()
         } else {
-            vm.setError("Localização desativada pelo sistema.")
+            vm.clearError()
         }
     }
 
-    fun ensureLocationThenStart(
-        onOk: () -> Unit,
-        onError: (String) -> Unit
-    ) {
+    fun checkGpsAndStart() {
+        val request = LocationRequest.Builder(1000)
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .build()
+
+        val settingsRequest = LocationSettingsRequest.Builder()
+            .addLocationRequest(request)
+            .build()
+
         settingsClient.checkLocationSettings(settingsRequest)
-            .addOnSuccessListener { onOk() }
+            .addOnSuccessListener { vm.startRecording() }
             .addOnFailureListener { ex ->
                 if (ex is ResolvableApiException) {
-                    resolutionLauncher.launch(IntentSenderRequest.Builder(ex.resolution).build())
+                    resolutionLauncher.launch(
+                        IntentSenderRequest.Builder(ex.resolution).build()
+                    )
                 } else {
-                    onError("Ative a Localização (GPS/Wi-Fi) nas configurações do sistema.")
+                    vm.setError("Ative o GPS nas configurações do sistema.")
                 }
             }
     }
 
-    // ---- câmera do mapa ----
-    val cameraState = rememberCameraPositionState()
+    val cameraPos = rememberCameraPositionState()
 
-    // Ajusta a câmera quando o path muda
     LaunchedEffect(state.points) {
         if (state.points.isNotEmpty()) {
-            if (state.points.size == 1) {
-                cameraState.animate(
-                    update = CameraUpdateFactory.newLatLngZoom(state.points.last(), 17f),
-                    durationMs = 600
-                )
-            } else {
-                val b = LatLngBounds.builder()
-                state.points.forEach { b.include(it) }
-                cameraState.animate(
-                    update = CameraUpdateFactory.newLatLngBounds(b.build(), 100),
-                    durationMs = 600
-                )
-            }
+            cameraPos.animate(
+                CameraUpdateFactory.newLatLngZoom(state.points.last(), 17f),
+                600
+            )
         }
     }
 
-    // Diagnóstico: se ficar muito tempo sem fix, avisa
-    LaunchedEffect(state.isRecording, state.isLoading) {
-        if (state.isRecording && state.isLoading) {
-            kotlinx.coroutines.delay(8000)
-            vm.setError("Ainda sem sinal… verifique se a Localização está ativa e tente ir ao ar livre.")
+    state.errorMessage?.let { msg ->
+        LaunchedEffect(msg) {
+            Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
+            vm.clearError()
         }
     }
 
-    // Para de gravar ao sair da tela (evita vazamento)
-    DisposableEffect(Unit) {
-        onDispose { vm.stopRecording() }
+    state.successMessage?.let { msg ->
+        LaunchedEffect(msg) {
+            Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
+            vm.clearError()
+        }
     }
 
     Scaffold(
@@ -167,20 +139,23 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
             ExtendedFloatingActionButton(
                 onClick = {
                     if (!hasLocationPermission) {
-                        requestPermissions.launch(permissions)
+                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         return@ExtendedFloatingActionButton
                     }
-                    if (state.isRecording) {
-                        vm.saveRoute()
-                        vm.stopRecording()
+
+                    if (!state.isRecording) {
+                        checkGpsAndStart()
                     } else {
-                        ensureLocationThenStart(
-                            onOk = { vm.startRecording() },
-                            onError = { vm.setError(it) }
-                        )
+                        vm.stopRecording()
+                        vm.saveRoute()
                     }
                 }
-            ) { Text(if (state.isRecording) "Parar" else "Gravar") }
+            ) {
+                Text(
+                    if (!state.isRecording) "Gravar rota"
+                    else "Parar e salvar"
+                )
+            }
         }
     ) { padding ->
 
@@ -189,74 +164,60 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            when {
-                state.isLoading -> {
-                    LoadingIndicator()
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPos,
+                properties = MapProperties(
+                    isMyLocationEnabled = hasLocationPermission
+                ),
+                uiSettings = MapUiSettings(
+                    myLocationButtonEnabled = true
+                )
+            ) {
+                if (state.points.size >= 2) {
+                    Polyline(points = state.points)
                 }
-                else -> {
-                    if (!hasLocationPermission) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
-                        ) {
-                            Text("Permissão de localização necessária")
-                            Spacer(Modifier.height(10.dp))
-                            Button(onClick = { requestPermissions.launch(permissions) }) {
-                                Text("Permitir localização")
-                            }
-                        }
-                        return@Box
-                    }
+                state.startLocation?.let {
+                    Marker(
+                        state = rememberMarkerState(position = it),
+                        title = "Início"
+                    )
+                }
+                state.endLocation?.let {
+                    Marker(
+                        state = rememberMarkerState(position = it),
+                        title = "Atual"
+                    )
+                }
+            }
 
-                    GoogleMap(
-                        modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = cameraState,
-                        properties = MapProperties(
-                            isMyLocationEnabled = hasLocationPermission
-                        ),
-                        uiSettings = MapUiSettings(
-                            myLocationButtonEnabled = true,
-                            zoomControlsEnabled = false
-                        )
-                    ) {
-                        if (state.points.size >= 2) {
-                            Polyline(points = state.points)
-                        }
-                        if (state.points.isNotEmpty()) {
-                            Marker(
-                                state = rememberMarkerState(position = state.points.first()),
-                                title = "Início"
-                            )
-                            Marker(
-                                state = rememberMarkerState(position = state.points.last()),
-                                title = "Atual"
-                            )
-                        }
-                    }
+            // --- Painel superior (distância / tempo) ---
+            Card(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(16.dp)
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Text(
+                        if (state.isRecording) "Gravando..." else "Pronto",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text("Distância: ${formatDistance(state.distance)}")
+                    Text("Tempo: ${formatElapsed(state.time)}")
+                }
+            }
 
-                    // Painel superior
-                    Card(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(12.dp)
-                    ) {
-                        Column(Modifier.padding(12.dp)) {
-                            val title = when {
-                                state.isRecording -> "Gravando…"
-                                else -> "Pronto"
-                            }
-
-                            Text(title, style = MaterialTheme.typography.titleMedium)
-
-                            Spacer(Modifier.height(4.dp))
-
-                            Text("Distância: ${formatDistance(state.distance)}")
-                            Text("Tempo: ${formatElapsed(state.time)}")
-                        }
-                    }
+            // --- Loading ---
+            if (state.isLoading) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = .4f))
+                ) {
+                    CircularProgressIndicator(
+                        Modifier.align(Alignment.Center)
+                    )
                 }
             }
         }

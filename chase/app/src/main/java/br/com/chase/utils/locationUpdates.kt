@@ -26,12 +26,6 @@ fun locationUpdatesFlow(
     val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             result.locations.forEach { location ->
-                // Adapta prioridade apartir da velocidade...
-                val adaptivePriority = if (location.speed < 2f) {
-                    Priority.PRIORITY_BALANCED_POWER_ACCURACY
-                } else {
-                    Priority.PRIORITY_HIGH_ACCURACY
-                }
                 client.setMockMode(false)
                 trySend(location).isSuccess
             }

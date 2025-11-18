@@ -4,15 +4,15 @@ import br.com.chase.data.model.RouteRequest
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseUser
 
-data class RouteState (
+data class RouteState(
     val isLoading: Boolean = false,
-    val user: FirebaseUser? = null,
-    val errorMessage: String? = null,
-    val isConnected: Boolean = true,
     val isRecording: Boolean = false,
+    val isConnected: Boolean = true,
 
-    // --- campos da rota
-    val route: RouteRequest? = null,
+    val user: FirebaseUser? = null,
+
+    val errorMessage: String? = null,
+    val successMessage: String? = null,
 
     val name: String = "Sem nome",
     val description: String = "Sem descrição",
@@ -21,6 +21,8 @@ data class RouteState (
     val time: Long = 0L,
 
     val points: List<LatLng> = emptyList(),
-    val startLocation: LatLng? = points.firstOrNull(),
-    val endLocation: LatLng? = points.lastOrNull(),
-    )
+    val startLocation: LatLng? = null,
+    val endLocation: LatLng? = null,
+
+    val route: RouteRequest? = null
+)

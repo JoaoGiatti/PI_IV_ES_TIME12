@@ -41,10 +41,6 @@ data class Ranking(
     val averageSpeed: Double
 )
 
-data class RouteListResponse(
-    val routes: List<RouteResponse>
-)
-
 data class RouteAttemptRequest(
     val uid: String,
     val totalTime: String,
