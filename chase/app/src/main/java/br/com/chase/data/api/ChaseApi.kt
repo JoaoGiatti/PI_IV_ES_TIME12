@@ -1,7 +1,6 @@
 package br.com.chase.data.api
 
 import br.com.chase.data.model.RouteAttemptRequest
-import br.com.chase.data.model.RouteListResponse
 import br.com.chase.data.model.RouteRequest
 import br.com.chase.data.model.RouteResponse
 import br.com.chase.data.model.UserRequest

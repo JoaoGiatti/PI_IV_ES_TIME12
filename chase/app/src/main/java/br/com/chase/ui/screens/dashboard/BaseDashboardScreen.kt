@@ -102,6 +102,7 @@ fun BaseDashboardScreen(
         ) { paddingValues ->
             HorizontalPager(
                 state = pagerState,
+                userScrollEnabled = state.selectedTab != 0,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
