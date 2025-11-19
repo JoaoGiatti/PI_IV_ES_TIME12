@@ -14,8 +14,6 @@ public class Ranking {
     private String totalTime;
     private double averageSpeed;
 
-    public Ranking() {}
-
     public Ranking(String uid, String userName, String photoUrl, String totalTime, double averageSpeed) {
         this.uid = uid;
         this.userName = userName;

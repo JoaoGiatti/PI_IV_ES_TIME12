@@ -58,20 +58,21 @@ public class RotaService {
             throw new BadRequestException("A lista de pontos não pode estar vazia.");
     }
 
-
     private double calcularVelocidadeMedia(double distancia, String tempoRecorde) {
         try {
             String[] partes = tempoRecorde.split(":");
+
             int horas = Integer.parseInt(partes[0]);
             int minutos = Integer.parseInt(partes[1]);
             int segundos = Integer.parseInt(partes[2]);
+
             double tempoEmHoras = horas + (minutos / 60.0) + (segundos / 3600.0);
-            return distancia / tempoEmHoras;
+            return (distancia / 1000.0) / tempoEmHoras;
+
         } catch (Exception e) {
             throw new BadRequestException("Formato de tempo inválido. Use HH:mm:ss");
         }
     }
-
 
     public Rota criarRota(Rota rota) {
         validarRota(rota);
@@ -81,9 +82,8 @@ public class RotaService {
         rota.setPublic(true);
 
         // Calcular velocidade média (p/ recorde)
-        double distanciaKm = rota.getDistance() / 1000.0;
         double velocidadeMedia = calcularVelocidadeMedia(
-                distanciaKm,
+                rota.getDistance(),
                 rota.getRecordTime()
         );
         rota.setBestAverageSpeed(velocidadeMedia);
@@ -152,46 +152,62 @@ public class RotaService {
         Rota route = rotaRepository.findById(rid)
                 .orElseThrow(() -> new RuntimeException("Rota não encontrada."));
 
-        Usuario u = usuarioRepository.findByUid(uid);
+        Usuario user = usuarioRepository.findByUid(uid);
+        if (user == null) throw new RuntimeException("Usuário não encontrado.");
 
-        List<Ranking> ranking = route.getTop3();
+        double avgSpeed = calcularVelocidadeMedia(route.getDistance(), totalTime);
+        long newTimeMs = parseTimeToMs(totalTime);
 
-        // Cria o novo record
-        double kmPorHora = calcularVelocidadeMedia(route.getDistance(), totalTime);
-        Ranking newRecord = new Ranking(uid, u.getDisplayName(), u.getPhotoUrl(), totalTime, kmPorHora);
+        List<Ranking> ranking = new ArrayList<>(route.getTop3());
 
+        Ranking existing = ranking.stream()
+                .filter(r -> r.getUid().equals(uid))
+                .findFirst()
+                .orElse(null);
 
-        List<Ranking> temp = new ArrayList<>(ranking);
-        temp.add(newRecord);
+        if (existing != null) {
+            long oldTimeMs = parseTimeToMs(existing.getTotalTime());
 
-        // Ordena do menor tempo pro maior
-        temp.sort(Comparator.comparingLong(r -> parseTimeToMs(r.getTotalTime())));
+            if (newTimeMs >= oldTimeMs) {
+                return Map.of(
+                        "message", "Tempo registrado, mas você já possui um tempo melhor.",
+                        "position", ranking.indexOf(existing) + 1,
+                        "top3", ranking
+                );
+            }
 
-        // Pega apenas os top 3
-        List<Ranking> updatedRanking = temp.stream().limit(3).toList();
-
-        // Verifica se entrou no top 3
-        boolean entrou = updatedRanking.contains(newRecord);
-
-        // Atualiza a rota (somente os top3)
-        route.setTop3(updatedRanking);
-        rotaRepository.save(route);
-
-        // Resposta final
-        Map<String, Object> response = new HashMap<>();
-
-        // Soma 1 ao número de competidores
-        route.setCompetitors(route.getCompetitors()+1);
-
-        if (!entrou) {
-            response.put("message", "Tempo registrado, mas não entrou no top 3.");
-            response.put("position", temp.indexOf(newRecord) + 1);
-            return response;
+            ranking.remove(existing);
         }
 
-        response.put("message", "Novo tempo registrado!");
-        response.put("position", updatedRanking.indexOf(newRecord) + 1);
-        response.put("top3", updatedRanking);
-        return response;
+        Ranking record = new Ranking(
+                uid,
+                user.getDisplayName(),
+                user.getPhotoUrl(),
+                totalTime,
+                avgSpeed
+        );
+
+        ranking.add(record);
+
+        ranking.sort(Comparator.comparingLong(r -> parseTimeToMs(r.getTotalTime())));
+
+        List<Ranking> top3 = ranking.subList(0, Math.min(3, ranking.size()));
+
+        boolean entrouNoTop3 = top3.contains(record);
+
+        route.setTop3(top3);
+        route.setCompetitors(route.getCompetitors() + 1);
+        route.setRecordTime(top3.get(0).getTotalTime());
+        route.setBestAverageSpeed(
+                top3.stream().mapToDouble(Ranking::getAverageSpeed).max().orElse(avgSpeed)
+        );
+
+        rotaRepository.save(route);
+
+        return Map.of(
+                "message", entrouNoTop3 ? "Novo melhor tempo registrado!" : "Tempo registrado!",
+                "position", ranking.indexOf(record) + 1,
+                "top3", top3
+        );
     }
 }
