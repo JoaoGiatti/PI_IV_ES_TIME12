@@ -109,4 +109,18 @@ class ChaseSpringRepository(
         Log.e(TAG, "Exception while fetching public routes", e)
         Result.failure(e)
     }
+
+    suspend fun deleteRoute(rid: String): Result<Unit> = try {
+        val response = api.deleteRoute(rid)
+
+        if (response.isSuccessful) {
+            Result.success(Unit)
+        } else {
+            Log.e(TAG, "Error ${response.code()} while deleting route: ${response.errorBody()?.string()}")
+            Result.failure(Exception("Error ${response.code()} while deleting route"))
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Exception while deleting route", e)
+        Result.failure(e)
+    }
 }

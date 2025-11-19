@@ -8,6 +8,7 @@ import br.com.chase.data.model.UserResponse
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.Response
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -50,4 +51,7 @@ interface ChaseApi {
     suspend fun updateRoute(
         @Path("rid") rid: String, @Body attempt: RouteAttemptRequest
     ): Response<RouteResponse>
+
+    @DELETE("routes/{rid}")
+    suspend fun deleteRoute(@Path("rid") rid: String): Response<Unit>
 }

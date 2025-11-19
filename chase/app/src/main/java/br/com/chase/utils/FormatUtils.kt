@@ -22,3 +22,21 @@ fun formatAverageSpeed(kmh: Double): String {
     }
     return String.format("%.2f km/h", kmh)
 }
+
+fun formatTotalTime(time: String): String {
+    val parts = time.split(":")
+    if (parts.size != 3) return time
+
+    val hours = parts[0].toIntOrNull() ?: return time
+    val minutes = parts[1].toIntOrNull() ?: return time
+    val seconds = parts[2].toIntOrNull() ?: return time
+
+    val mm = minutes.toString().padStart(2, '0')
+    val ss = seconds.toString().padStart(2, '0')
+
+    return if (hours == 0) {
+        "0:$mm:$ss"
+    } else {
+        "${hours}:${mm}:${ss}"
+    }
+}

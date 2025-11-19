@@ -86,6 +86,25 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             }
     }
 
+    fun deleteRoute(rid: String) = viewModelScope.launch {
+
+        _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+        chaseSpringRepository.deleteRoute(rid)
+            .onSuccess {
+                _state.update { current ->
+                    current.copy(
+                        isLoading = false,
+                        routes = current.routes.filterNot { it.rid == rid }
+                    )
+                }
+            }
+            .onFailure { e ->
+                _state.update {
+                    it.copy(isLoading = false, errorMessage = e.message ?: "Erro ao deletar rota")
+                }
+            }
+    }
 
     fun onBioChange(newText: String) {
         _state.update { it.copy(editingBio = newText) }
