@@ -4,11 +4,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -52,8 +54,8 @@ fun BaseDashboardScreen(
             modifier = Modifier.fillMaxSize(),
             bottomBar = {
                 NavigationBar(
-                    modifier = Modifier.fillMaxWidth(),
-                    containerColor = Color.White
+                    modifier = Modifier.fillMaxWidth().height(64.dp),
+                    containerColor = MaterialTheme.colorScheme.onPrimary
                 ) {
                     NavigationBarItem(
                         selected = state.selectedTab == 0,
@@ -64,7 +66,7 @@ fun BaseDashboardScreen(
                                     painterResource(R.drawable.maps_colorido)
                                 else painterResource(R.drawable.maps_black),
                                 contentDescription = "Route",
-                                modifier = Modifier.size(25.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
@@ -78,7 +80,7 @@ fun BaseDashboardScreen(
                                     painterResource(R.drawable.statistics_colorido)
                                 else painterResource(R.drawable.statistics_black),
                                 contentDescription = "Feed",
-                                modifier = Modifier.size(25.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
@@ -92,7 +94,7 @@ fun BaseDashboardScreen(
                                     painterResource(R.drawable.user_colorido)
                                 else painterResource(R.drawable.user_black),
                                 contentDescription = "Profile",
-                                modifier = Modifier.size(25.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
@@ -105,7 +107,7 @@ fun BaseDashboardScreen(
                 userScrollEnabled = state.selectedTab != 0,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(bottom = paddingValues.calculateBottomPadding())
             ) { page ->
                 when (page) {
                     0 -> RouteScreen()

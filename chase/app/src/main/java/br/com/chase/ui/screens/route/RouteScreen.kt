@@ -10,10 +10,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +57,9 @@ import com.google.maps.android.compose.rememberMarkerState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RouteScreen(vm: RouteViewModel = viewModel()) {
+fun RouteScreen(
+    vm: RouteViewModel = viewModel()
+) {
 
     val state by vm.state.collectAsState()
     val ctx = LocalContext.current
@@ -134,91 +141,77 @@ fun RouteScreen(vm: RouteViewModel = viewModel()) {
         }
     }
 
-    Scaffold(
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    if (!hasLocationPermission) {
-                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                        return@ExtendedFloatingActionButton
-                    }
+    Box(
+        modifier = Modifier.fillMaxSize().padding(WindowInsets.statusBars.asPaddingValues())
+    ) {
 
-                    if (!state.isRecording) {
-                        checkGpsAndStart()
-                    } else {
-                        vm.stopRecording()
-                        vm.saveRoute()
-                    }
-                }
-            ) {
-                Text(
-                    if (!state.isRecording) "Gravar rota"
-                    else "Parar e salvar"
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPos,
+            properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
+            uiSettings = MapUiSettings(myLocationButtonEnabled = true)
+        ) {
+            if (state.points.size >= 2) {
+                Polyline(points = state.points)
+            }
+            state.startLocation?.let {
+                Marker(
+                    state = rememberMarkerState(position = it),
+                    title = "Início"
+                )
+            }
+            state.endLocation?.let {
+                Marker(
+                    state = rememberMarkerState(position = it),
+                    title = "Atual"
                 )
             }
         }
-    ) { padding ->
 
-        Box(
+        // Painel superior
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+                .align(Alignment.TopCenter)
+                .padding(16.dp)
         ) {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPos,
-                properties = MapProperties(
-                    isMyLocationEnabled = hasLocationPermission
-                ),
-                uiSettings = MapUiSettings(
-                    myLocationButtonEnabled = true
-                )
-            ) {
-                if (state.points.size >= 2) {
-                    Polyline(points = state.points)
-                }
-                state.startLocation?.let {
-                    Marker(
-                        state = rememberMarkerState(position = it),
-                        title = "Início"
-                    )
-                }
-                state.endLocation?.let {
-                    Marker(
-                        state = rememberMarkerState(position = it),
-                        title = "Atual"
-                    )
-                }
+            Column(Modifier.padding(12.dp)) {
+                Text(if (state.isRecording) "Gravando..." else "Pronto")
+                Spacer(Modifier.height(4.dp))
+                Text("Distância: ${formatDistance(state.distance)}")
+                Text("Tempo: ${formatElapsed(state.time)}")
             }
+        }
 
-            // --- Painel superior (distância / tempo) ---
-            Card(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(16.dp)
+        // 🔥 Botão substituindo o FAB
+        Button(
+            onClick = {
+                if (!hasLocationPermission) {
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    return@Button
+                }
+
+                if (!state.isRecording) {
+                    checkGpsAndStart()
+                } else {
+                    vm.stopRecording()
+                    vm.saveRoute()
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp)
+        ) {
+            Text(if (!state.isRecording) "Gravar rota" else "Parar e salvar")
+        }
+
+        // Loading
+        if (state.isLoading) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = .4f))
             ) {
-                Column(Modifier.padding(12.dp)) {
-                    Text(
-                        if (state.isRecording) "Gravando..." else "Pronto",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text("Distância: ${formatDistance(state.distance)}")
-                    Text("Tempo: ${formatElapsed(state.time)}")
-                }
-            }
-
-            // --- Loading ---
-            if (state.isLoading) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = .4f))
-                ) {
-                    CircularProgressIndicator(
-                        Modifier.align(Alignment.Center)
-                    )
-                }
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
     }

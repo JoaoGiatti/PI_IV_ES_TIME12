@@ -39,10 +39,10 @@ import br.com.chase.utils.formatDistance
 fun RoutesCard(route: RouteResponse) {
     Card(
         modifier = Modifier
-            .width(370.dp)
+            .fillMaxWidth(0.9f)
             .wrapContentHeight(),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(8.dp),
+        elevation = CardDefaults.cardElevation(12.dp),
         colors = CardDefaults.cardColors(Color.White)
     ) {
         Column(
