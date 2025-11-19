@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import br.com.chase.models.Rota;
 import br.com.chase.services.RotaService;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
 import java.util.Map;
@@ -75,6 +74,12 @@ public class RotaController {
     }
 
     // PUT - Atualiza o top3 de uma rota pelo RID => Rota ID...
-    // @PutMapping("/{rid}/attempt")
-    // public ?? atualizarRota() {}  // TODO
+    @PostMapping("/{rid}/record")
+    public ResponseEntity<?> registerRecord(
+            @PathVariable String rid,
+            @RequestParam String uid,
+            @RequestParam String timeString
+    ) {
+        return ResponseEntity.ok(rotaService.registerRecord(rid, uid, timeString));
+    }
 }
