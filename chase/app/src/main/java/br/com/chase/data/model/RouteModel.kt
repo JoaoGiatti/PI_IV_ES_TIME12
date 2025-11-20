@@ -10,7 +10,7 @@ data class RouteRequest(
     val endLocation: String,
     val distance: Double,
     val recordTime: String,
-    val points: List<LatLng>?
+    val points: List<LatLng> = emptyList()
 )
 
 data class RouteResponse(

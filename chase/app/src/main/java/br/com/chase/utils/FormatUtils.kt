@@ -1,5 +1,14 @@
 package br.com.chase.utils
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import kotlin.math.min
+
 fun formatElapsed(ms: Long): String {
     val total = ms / 1000
     val h = total / 3600
@@ -39,4 +48,49 @@ fun formatTotalTime(time: String): String {
     } else {
         "${hours}:${mm}:${ss}"
     }
+}
+
+fun createBalloonBitmap(
+    source: Bitmap,
+    borderSize: Float = 8f,
+    triangleHeight: Float = 35f,
+    triangleWidth: Float = 55f
+): Bitmap {
+    val size = min(source.width, source.height)
+    val totalHeight = size + triangleHeight.toInt()
+
+    val output = Bitmap.createBitmap(size, totalHeight, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(output)
+
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    val radius = size / 2f
+    val centerX = size / 2f
+    val centerY = radius
+
+    paint.color = Color.BLACK
+    canvas.drawCircle(centerX, centerY, radius, paint)
+
+    val imageRect = RectF(
+        borderSize,
+        borderSize,
+        size - borderSize,
+        size - borderSize
+    )
+
+    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+
+    canvas.drawBitmap(source, null, imageRect, paint)
+    paint.xfermode = null
+
+    paint.color = -1170124
+    val trianglePath = android.graphics.Path().apply {
+        moveTo(centerX, size + triangleHeight)        // ponta do triângulo
+        lineTo(centerX - triangleWidth / 2, size.toFloat()) // canto esquerdo
+        lineTo(centerX + triangleWidth / 2, size.toFloat()) // canto direito
+        close()
+    }
+    canvas.drawPath(trianglePath, paint)
+
+    return output
 }

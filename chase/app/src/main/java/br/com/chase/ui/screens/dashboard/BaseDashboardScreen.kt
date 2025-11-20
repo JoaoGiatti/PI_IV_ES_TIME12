@@ -1,6 +1,7 @@
 package br.com.chase.ui.screens.dashboard
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -54,7 +56,12 @@ fun BaseDashboardScreen(
             modifier = Modifier.fillMaxSize(),
             bottomBar = {
                 NavigationBar(
-                    modifier = Modifier.fillMaxWidth().height(64.dp),
+                    modifier = Modifier.fillMaxWidth().height(64.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xFFDDDDDD),
+                            shape = RectangleShape
+                        ),
                     containerColor = MaterialTheme.colorScheme.onPrimary
                 ) {
                     NavigationBarItem(
@@ -110,7 +117,7 @@ fun BaseDashboardScreen(
                     .padding(bottom = paddingValues.calculateBottomPadding())
             ) { page ->
                 when (page) {
-                    0 -> RouteScreen()
+                    0 -> RouteScreen(paddingValues)
                     1 -> FeedScreen()
                     2 -> ProfileScreen()
                 }
