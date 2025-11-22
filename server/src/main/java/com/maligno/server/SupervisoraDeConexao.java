@@ -1,16 +1,16 @@
 package com.maligno.server;
 
 import com.maligno.client.Parceiro;
-import com.maligno.statement.*;
+import com.maligno.client.PedidoDeRota;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class SupervisoraDeConexao extends Thread
 {
-    private double              valor=0;
     private Parceiro            usuario;
     private Socket              conexao;
     private ArrayList<Parceiro> usuarios;
@@ -24,31 +24,23 @@ public class SupervisoraDeConexao extends Thread
     }
 
     public void run () {
-        ObjectOutputStream transmissor;
+        DataInputStream receptor = null;
         try {
-            transmissor = new ObjectOutputStream(this.conexao.getOutputStream());
+            receptor = new DataInputStream(conexao.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        catch (Exception erro) {
-            return;
-        }
-        
-        ObjectInputStream receptor = null;
+        DataOutputStream transmissor = null;
         try {
-            receptor= new ObjectInputStream(this.conexao.getInputStream());
+            transmissor = new DataOutputStream(conexao.getOutputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        catch (Exception err0) {
-            try {
-                transmissor.close();
-            }
-            catch (Exception falha) {} // so tentando fechar antes de acabar a thread
-            
-            return;
-        }
-
         try {
             this.usuario = new Parceiro (this.conexao, receptor, transmissor);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        catch (Exception erro) {} // sei que passei os parametros corretos
 
         try {
             synchronized (this.usuarios) {
@@ -56,47 +48,39 @@ public class SupervisoraDeConexao extends Thread
             }
 
             for(;;) {
-                Comunicado comunicado = this.usuario.envie ();
+                String uid = receptor.readUTF();
+                String name = receptor.readUTF();
+                String description = receptor.readUTF();
+                String startLocation = receptor.readUTF();
+                String endLocation = receptor.readUTF();
+                double distance = Double.parseDouble(receptor.readUTF());
+                String recordTime = receptor.readUTF();
 
-                if (comunicado==null) return;
-                else if (comunicado instanceof PedidoDeOperacao) {
-                    PedidoDeOperacao pedidoDeOperacao = (PedidoDeOperacao)comunicado;
+                System.out.println("\n========== 📥 ROTA RECEBIDA DO CLIENTE ==========");
+                System.out.printf("UID ...............: %s%n", uid);
+                System.out.printf("Nome ..............: %s%n", name);
+                System.out.printf("Descrição .........: %s%n", description);
+                System.out.printf("Origem ............: %s%n", startLocation);
+                System.out.printf("Destino ...........: %s%n", endLocation);
+                System.out.printf("Distância (km) ....: %.2f%n", distance);
+                System.out.printf("Tempo de registro .: %s%n", recordTime);
+                System.out.println("=================================================\n");
 
-                    switch (pedidoDeOperacao.getOperacao()) {
-                        case '+':
-                            this.valor += pedidoDeOperacao.getValor();
-                            break;
+                PedidoDeRota pedido = new PedidoDeRota(uid, name, description, startLocation, endLocation, distance, recordTime);
 
-                        case '-':
-                            this.valor -= pedidoDeOperacao.getValor();
-                            break;
+                transmissor.writeUTF(pedido.validar() ? "true" : "false");
+                transmissor.flush();
 
-                        case '*':
-                            this.valor *= pedidoDeOperacao.getValor();
-                            break;
-
-                        case '/':
-                            this.valor /= pedidoDeOperacao.getValor();
-                    }
-                }
-                else if (comunicado instanceof PedidoDeResultado) {
-                    this.usuario.receba (new ComunicadoDeResultado(this.valor));
-                }
-                else if (comunicado instanceof PedidoParaSair) {
-                    synchronized (this.usuarios) {
-                        this.usuarios.remove (this.usuario);
-                    }
-                    this.usuario.adeus();
-                }
+                System.out.println("📤 Resposta enviada");
             }
         }
+
         catch (Exception erro) {
             try {
                 transmissor.close ();
-                receptor   .close ();
+                receptor.close ();
             }
             catch (Exception falha) {} // so tentando fechar antes de acabar a thread
-            return;
         }
     }
 }

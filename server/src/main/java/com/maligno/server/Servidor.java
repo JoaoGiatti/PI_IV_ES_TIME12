@@ -1,7 +1,6 @@
 package com.maligno.server;
 
 import com.maligno.client.Parceiro;
-import com.maligno.statement.ComunicadoDeDesligamento;
 import com.maligno.utils.Teclado;
 
 import java.util.ArrayList;
@@ -50,12 +49,10 @@ public class Servidor {
     }
 
     private static void desligarServidorUsuarios(List<Parceiro> users) {
-        final ComunicadoDeDesligamento aviso = new ComunicadoDeDesligamento();
-
         synchronized (users) {
             for (Parceiro u : users) {
                 try {
-                    u.receba(aviso);
+                    u.receba("O servidor anti-cheat do Chase foi desativado!\n");
                     u.adeus();
                 } catch (Exception ignored) {}
             }

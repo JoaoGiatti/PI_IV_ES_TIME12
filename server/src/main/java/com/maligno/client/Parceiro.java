@@ -1,35 +1,26 @@
 package com.maligno.client;
 
-import com.maligno.statement.Comunicado;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
-import java.util.concurrent.Semaphore;
 
 public class Parceiro {
     private Socket conexao;
-    private ObjectInputStream receptor;
-    private ObjectOutputStream transmissor;
-    
-    private Comunicado proximoComunicado = null;
+    private DataInputStream  receptor;
+    private DataOutputStream  transmissor;
 
-    private Semaphore mutEx = new Semaphore (1,true);
-
-    public Parceiro (Socket conexao, ObjectInputStream receptor, ObjectOutputStream transmissor) throws Exception {
-        if (conexao==null) throw new Exception ("Conexao ausente");
-        if (receptor==null) throw new Exception ("Receptor ausente");
-        if (transmissor==null) throw new Exception ("Transmissor ausente");
+    public Parceiro(Socket conexao, DataInputStream receptor, DataOutputStream transmissor) throws Exception {
+        if (conexao == null) throw new Exception ("Conexao ausente");
+        if (receptor == null) throw new Exception ("Receptor ausente");
+        if (transmissor == null) throw new Exception ("Transmissor ausente");
 
         this.conexao = conexao;
         this.receptor = receptor;
         this.transmissor = transmissor;
     }
 
-    public void receba (Comunicado x) throws Exception {
+    public void receba(String x) throws Exception {
         try {
-            this.transmissor.writeObject(x);
+            this.transmissor.writeUTF(x);
             this.transmissor.flush();
         }
         catch (IOException erro) {
@@ -37,27 +28,12 @@ public class Parceiro {
         }
     }
 
-    public Comunicado espie () throws Exception {
+    public void enviar(String x) throws Exception {
         try {
-            this.mutEx.acquireUninterruptibly();
-            if (this.proximoComunicado == null) this.proximoComunicado = (Comunicado)this.receptor.readObject();
-            this.mutEx.release();
-            return this.proximoComunicado;
-        }
-        catch (Exception erro) {
-            throw new Exception ("Erro de recepcao");
-        }
-    }
-
-    public Comunicado envie () throws Exception {
-        try {
-            if (this.proximoComunicado == null) this.proximoComunicado = (Comunicado)this.receptor.readObject();
-            Comunicado ret = this.proximoComunicado;
-            this.proximoComunicado = null;
-            return ret;
-        }
-        catch (Exception erro) {
-            throw new Exception ("Erro de recepcao");
+            transmissor.writeUTF(x);
+            transmissor.flush();
+        } catch (IOException erro) {
+            throw new Exception("Erro de transmissao: " + erro.getMessage());
         }
     }
 

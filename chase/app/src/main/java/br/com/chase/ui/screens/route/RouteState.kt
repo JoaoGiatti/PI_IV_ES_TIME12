@@ -21,6 +21,7 @@ data class RouteState(
         recordTime = "00:00:00",
         points = emptyList()
     ),
+    val validacaoRota: Boolean = false,
 
     val countdown: Int? = null
 )
