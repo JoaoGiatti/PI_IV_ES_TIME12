@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitModule {
 
-    private const val BASE_URL = "http://192.168.15.6:8080"
+    private const val BASE_URL = "https://pi-iv-es-time12-xt2c.onrender.com"
 
     private val client by lazy {
         val logger = HttpLoggingInterceptor().apply {
