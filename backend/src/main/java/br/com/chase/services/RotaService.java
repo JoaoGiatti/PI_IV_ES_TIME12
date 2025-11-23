@@ -148,6 +148,14 @@ public class RotaService {
         rotaRepository.delete(rota);
     }
 
+    public Rota togglePublic(String rid) {
+        Rota rota = rotaRepository.findById(rid)
+                .orElseThrow(() -> new RuntimeException("Rota não encontrada"));
+
+        rota.setPublic(!rota.isPublic()); // alterna TRUE ↔ FALSE
+        return rotaRepository.save(rota);
+    }
+
     public Map<String, Object> registerRecord(String rid, String uid, String totalTime) {
         Rota route = rotaRepository.findById(rid)
                 .orElseThrow(() -> new RuntimeException("Rota não encontrada."));
