@@ -1,10 +1,12 @@
 package br.com.chase.ui.screens.profile
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
+import br.com.chase.data.model.RouteResponse
 import br.com.chase.utils.NetworkObserver
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -104,6 +106,36 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     it.copy(isLoading = false, errorMessage = e.message ?: "Erro ao deletar rota")
                 }
             }
+    }
+
+    fun togglePublic(rid: String) {
+        viewModelScope.launch {
+            val result = chaseSpringRepository.togglePublic(rid)
+
+            result.onSuccess { updatedRoute ->
+                val newList = state.value.routes.map {
+                    if (it.rid == rid) updatedRoute else it
+                }
+
+                val msg = if (updatedRoute.public)
+                    "A rota \"${updatedRoute.name}\" agora está visível para todos."
+                else
+                    "A rota \"${updatedRoute.name}\" agora está visível apenas para você."
+
+                _state.update {
+                    it.copy(
+                        routes = newList,
+                        successMessage = msg      // 👈 Dispara alerta
+                    )
+                }
+            }.onFailure {
+                Log.e("ProfileViewModel", "Erro ao togglar public", it)
+            }
+        }
+    }
+
+    fun clearMessage() {
+        _state.update { it.copy(successMessage = null) }
     }
 
     fun onBioChange(newText: String) {

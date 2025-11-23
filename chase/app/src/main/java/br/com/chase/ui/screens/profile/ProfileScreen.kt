@@ -354,7 +354,8 @@ fun ProfileScreen(
                                     RoutesCard(
                                         route = route,
                                         showDeleteButton = true,
-                                        onDelete = { viewModel.deleteRoute(route.rid) }
+                                        onDelete = { viewModel.deleteRoute(route.rid) },
+                                        onTogglePublic = { rid -> viewModel.togglePublic(rid) }
                                         )
                                 }
 
@@ -387,5 +388,18 @@ fun ProfileScreen(
                 }
             }
         }
+        if (state.successMessage != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearMessage() },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.clearMessage() }) {
+                        Text("OK")
+                    }
+                },
+                title = { Text("Alteração de visibilidade") },
+                text = { Text(state.successMessage ?: "") }
+            )
+        }
+
     }
 }

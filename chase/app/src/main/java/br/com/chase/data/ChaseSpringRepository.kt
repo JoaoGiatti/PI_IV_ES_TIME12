@@ -123,4 +123,22 @@ class ChaseSpringRepository(
         Log.e(TAG, "Exception while deleting route", e)
         Result.failure(e)
     }
+
+    suspend fun togglePublic(rid: String): Result<RouteResponse> = try {
+        val response = api.togglePublic(rid)
+
+        if (response.isSuccessful) {
+            response.body()?.let { Result.success(it) }
+                ?: run {
+                    Log.e(TAG, "Empty togglePublic response")
+                    Result.failure(Exception("Empty togglePublic response"))
+                }
+        } else {
+            Log.e(TAG, "Error ${response.code()} while toggling public: ${response.errorBody()?.string()}")
+            Result.failure(Exception("Error ${response.code()} while toggling public"))
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Exception while toggling public", e)
+        Result.failure(e)
+    }
 }
