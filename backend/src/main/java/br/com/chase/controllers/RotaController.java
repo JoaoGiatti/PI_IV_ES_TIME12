@@ -82,4 +82,10 @@ public class RotaController {
     ) {
         return ResponseEntity.ok(rotaService.registerRecord(rid, uid, timeString));
     }
+
+    // PATCH - Muda o estado de visibilidade TRUE <-> FALSE
+    @PatchMapping("/{rid}/toggle-public")
+    public ResponseEntity<Rota> togglePublic(@PathVariable String rid) {
+        return ResponseEntity.ok(rotaService.togglePublic(rid));
+    }
 }
