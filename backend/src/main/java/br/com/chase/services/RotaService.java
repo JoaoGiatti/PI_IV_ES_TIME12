@@ -88,8 +88,16 @@ public class RotaService {
         );
         rota.setBestAverageSpeed(velocidadeMedia);
 
-        // Calcular calorias estimadas (simplificado)
-        rota.setEstimatedCalories(rota.getDistance() * 60);
+        // Distância em km
+        double distanciaKm = rota.getDistance() / 1000.0;
+
+        // Peso médio (caso queira futuramente buscar do usuário)
+        double pesoPadraoKg = 70;
+
+        // Fórmula aproximada para corrida: 1.036 kcal por kg por km
+        double caloriasEstimadas = distanciaKm * pesoPadraoKg * 1.036;
+
+        rota.setEstimatedCalories(caloriasEstimadas);
 
         // Tentar buscar o usuário real pelo UID (se existir)
         String creatorUid = rota.getUid();
