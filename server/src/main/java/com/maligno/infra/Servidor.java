@@ -1,6 +1,5 @@
-package com.maligno.server;
+package com.maligno.infra;
 
-import com.maligno.client.Parceiro;
 import com.maligno.utils.Teclado;
 
 import java.util.ArrayList;

@@ -1,6 +1,4 @@
-package com.maligno.server;
-
-import com.maligno.client.Parceiro;
+package com.maligno.infra;
 
 import java.net.ServerSocket;
 import java.net.Socket;

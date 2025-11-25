@@ -1,4 +1,4 @@
-package com.maligno.client;
+package com.maligno.infra;
 
 import java.io.*;
 import java.net.Socket;
@@ -37,7 +37,7 @@ public class Parceiro {
         }
     }
 
-    public void adeus () throws Exception {
+    public void adeus() throws Exception {
         try {
             this.transmissor.close();
             this.receptor.close();

@@ -1,13 +1,15 @@
-package com.maligno.server;
+package com.maligno.infra;
 
-import com.maligno.client.Parceiro;
-import com.maligno.client.PedidoDeRota;
+import com.maligno.client.LatLng;
+import com.maligno.client.Rota;
+import com.maligno.client.ValidadorDeRota;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SupervisoraDeConexao extends Thread
 {
@@ -50,27 +52,28 @@ public class SupervisoraDeConexao extends Thread
             for(;;) {
                 String uid = receptor.readUTF();
                 String name = receptor.readUTF();
-                String description = receptor.readUTF();
+                String desc = receptor.readUTF();
                 String startLocation = receptor.readUTF();
                 String endLocation = receptor.readUTF();
                 double distance = Double.parseDouble(receptor.readUTF());
-                String recordTime = receptor.readUTF();
+                String time = receptor.readUTF();
 
-                System.out.println("\n========== 📥 ROTA RECEBIDA DO CLIENTE ==========");
-                System.out.printf("UID ...............: %s%n", uid);
-                System.out.printf("Nome ..............: %s%n", name);
-                System.out.printf("Descrição .........: %s%n", description);
-                System.out.printf("Origem ............: %s%n", startLocation);
-                System.out.printf("Destino ...........: %s%n", endLocation);
-                System.out.printf("Distância (km) ....: %.2f%n", distance);
-                System.out.printf("Tempo de registro .: %s%n", recordTime);
-                System.out.println("=================================================\n");
+                int pointsSize = receptor.readInt();
+                List<LatLng> points = new ArrayList<>();
 
-                PedidoDeRota pedido = new PedidoDeRota(uid, name, description, startLocation, endLocation, distance, recordTime);
+                for (int i = 0; i < pointsSize; i++) {
+                    double lat = receptor.readDouble();
+                    double lng = receptor.readDouble();
+                    points.add(new LatLng(lat, lng));
+                }
 
-                transmissor.writeUTF(pedido.validar() ? "true" : "false");
-                transmissor.flush();
+                Rota route = new Rota(uid, name, desc, startLocation, endLocation, distance, time, points);
 
+                boolean valido = ValidadorDeRota.isValid(route);
+
+                transmissor.writeUTF(valido? "true" : "false");
+
+                System.out.println(route);
                 System.out.println("📤 Resposta enviada");
             }
         }
