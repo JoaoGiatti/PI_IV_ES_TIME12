@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "565777743825",
+    "project_id": "experimentofirebase-218ab",
+    "storage_bucket": "experimentofirebase-218ab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:565777743825:android:685a4e208fa446af606af0",
+        "android_client_info": {
+          "package_name": "br.edu.puc.experimentofirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMyloAG62UKPyKV3O6kltUoDSfOX0meX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
