@@ -15,11 +15,6 @@ public class Rota {
     private String recordTime;   // "HH:mm:ss"
     private List<LatLng> points;
 
-    // Construtor Padrão...
-    public Rota() {
-        this.points = new ArrayList<>();
-    }
-
     // Construtor...
     public Rota(String uid,
                 String name,

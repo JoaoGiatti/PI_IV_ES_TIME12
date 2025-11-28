@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ValidadorDeRotaTest {
 
-    private Rota criarRotaValida() {
+    private Rota criarRotaValidaMock() {
         List<LatLng> pontos = Arrays.asList(
                 new LatLng(-23.561684, -46.625378),
                 new LatLng(-23.562000, -46.626000),
@@ -47,7 +47,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoRotaForValida_RetornaTrue() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
 
         // Act
         boolean valido = ValidadorDeRota.isValid(rota);
@@ -59,7 +59,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoUidForVazio_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setUid("   ");
 
         // Act
@@ -72,7 +72,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoNomeForVazio_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setName("");
 
         // Act
@@ -85,7 +85,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoDescricaoForVazia_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setDescription("   ");
 
         // Act
@@ -98,7 +98,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoLocalInicialForVazio_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setStartLocation("");
 
         // Act
@@ -111,7 +111,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoLocalFinalForVazio_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setEndLocation(null);
 
         // Act
@@ -124,7 +124,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoDistanciaForZero_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setDistance(0.0);
 
         // Act
@@ -137,7 +137,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoDistanciaForNegativa_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setDistance(-10.0);
 
         // Act
@@ -150,7 +150,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoTempoForNulo_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setRecordTime(null);
 
         // Act
@@ -163,7 +163,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoTempoForTextoLivre_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setRecordTime("abc");
 
         // Act
@@ -176,7 +176,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoTempoEstiverEmFormatoIncorreto_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setRecordTime("25:00"); // faltando parte dos segundos
 
         // Act
@@ -189,7 +189,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoTempoTiverNumerosForaDaFaixa_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setRecordTime("99:99:99");
 
         // Act
@@ -202,7 +202,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoTempoForImpossivelParaDistancia_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setDistance(20000.0);      // 20 km
         rota.setRecordTime("00:15:00"); // 15 min → impossível
 
@@ -216,7 +216,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoListaDePontosForNula_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setPoints(null);
 
         // Act
@@ -229,7 +229,7 @@ class ValidadorDeRotaTest {
     @Test
     void isValid_QuandoListaDePontosForVazia_RetornaFalse() {
         // Arrange
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setPoints(new ArrayList<>());
 
         // Act
@@ -246,7 +246,7 @@ class ValidadorDeRotaTest {
         pontos.add(new LatLng(-23.5, -46.6));
         pontos.add(null);
 
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setPoints(pontos);
 
         // Act
@@ -264,7 +264,7 @@ class ValidadorDeRotaTest {
                 new LatLng(-23.5, -46.7)
         );
 
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setPoints(pontos);
 
         // Act
@@ -282,7 +282,7 @@ class ValidadorDeRotaTest {
                 new LatLng(-23.6, -46.7)
         );
 
-        Rota rota = criarRotaValida();
+        Rota rota = criarRotaValidaMock();
         rota.setPoints(pontos);
 
         // Act
