@@ -88,8 +88,16 @@ public class RotaService {
         );
         rota.setBestAverageSpeed(velocidadeMedia);
 
-        // Calcular calorias estimadas (simplificado)
-        rota.setEstimatedCalories(rota.getDistance() * 60);
+        // Distância em km
+        double distanciaKm = rota.getDistance() / 1000.0;
+
+        // Peso médio (caso queira futuramente buscar do usuário)
+        double pesoPadraoKg = 70;
+
+        // Fórmula aproximada para corrida: 1.036 kcal por kg por km
+        double caloriasEstimadas = distanciaKm * pesoPadraoKg * 1.036;
+
+        rota.setEstimatedCalories(caloriasEstimadas);
 
         // Tentar buscar o usuário real pelo UID (se existir)
         String creatorUid = rota.getUid();
@@ -157,6 +165,7 @@ public class RotaService {
     }
 
     public Map<String, Object> registerRecord(String rid, String uid, String totalTime) {
+
         Rota route = rotaRepository.findById(rid)
                 .orElseThrow(() -> new RuntimeException("Rota não encontrada."));
 
@@ -165,6 +174,9 @@ public class RotaService {
 
         double avgSpeed = calcularVelocidadeMedia(route.getDistance(), totalTime);
         long newTimeMs = parseTimeToMs(totalTime);
+
+        // ====== SALVAR RANKING ANTIGO PARA COMPARAÇÃO ======
+        List<Ranking> oldTop3 = new ArrayList<>(route.getTop3());
 
         List<Ranking> ranking = new ArrayList<>(route.getTop3());
 
@@ -180,7 +192,8 @@ public class RotaService {
                 return Map.of(
                         "message", "Tempo registrado, mas você já possui um tempo melhor.",
                         "position", ranking.indexOf(existing) + 1,
-                        "top3", ranking
+                        "top3", ranking,
+                        "overtaken", List.of() // ninguém foi ultrapassado
                 );
             }
 
@@ -199,23 +212,43 @@ public class RotaService {
 
         ranking.sort(Comparator.comparingLong(r -> parseTimeToMs(r.getTotalTime())));
 
-        List<Ranking> top3 = ranking.subList(0, Math.min(3, ranking.size()));
+        List<Ranking> newTop3 = ranking.subList(0, Math.min(3, ranking.size()));
 
-        boolean entrouNoTop3 = top3.contains(record);
+        boolean entrouNoTop3 = newTop3.contains(record);
 
-        route.setTop3(top3);
+        // ====== CALCULAR QUEM FOI ULTRAPASSADO ======
+        List<String> overtaken = new ArrayList<>();
+
+        for (Ranking oldR : oldTop3) {
+            int oldPos = oldTop3.indexOf(oldR);
+            int newPos = newTop3.indexOf(oldR);
+
+            // caso tenha saído do top3 => perdeu posição
+            if (newPos == -1) {
+                overtaken.add(oldR.getUid());
+            } else if (newPos > oldPos) {
+                // caso tenha descido no ranking
+                overtaken.add(oldR.getUid());
+            }
+        }
+
+        // Atualiza dados da rota
+        route.setTop3(newTop3);
         route.setCompetitors(route.getCompetitors() + 1);
-        route.setRecordTime(top3.get(0).getTotalTime());
+        route.setRecordTime(newTop3.get(0).getTotalTime());
         route.setBestAverageSpeed(
-                top3.stream().mapToDouble(Ranking::getAverageSpeed).max().orElse(avgSpeed)
+                newTop3.stream().mapToDouble(Ranking::getAverageSpeed).max().orElse(avgSpeed)
         );
 
         rotaRepository.save(route);
 
+        // ====== RETORNO COMPLETO ======
         return Map.of(
-                "message", entrouNoTop3 ? "Novo melhor tempo registrado!" : "Tempo registrado!",
-                "position", ranking.indexOf(record) + 1,
-                "top3", top3
+                "message", entrouNoTop3 ? "Entrou no top 3!" : "Tempo registrado.",
+                "top3", newTop3,
+                "enteredTop3", entrouNoTop3,
+                "position", newTop3.indexOf(record) + 1,
+                "overtaken", overtaken // << UID DOS QUE FORAM ULTRAPASSADOS
         );
     }
 }

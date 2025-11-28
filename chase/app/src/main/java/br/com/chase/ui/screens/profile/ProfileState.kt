@@ -11,6 +11,7 @@ data class ProfileState (
     val userData: UserResponse? = null,
     val routes: List<RouteResponse> = emptyList(),
     val errorMessage: String? = null,
+    val successMessage: String? = null,
     val isConnected: Boolean = true,
     val editing: Boolean = false,
     val showDialog: Boolean = false,

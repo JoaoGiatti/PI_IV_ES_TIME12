@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,7 +50,8 @@ import br.com.chase.utils.formatTotalTime
 fun RoutesCard(
     route: RouteResponse,
     showDeleteButton: Boolean = false,
-    onDelete: (String) -> Unit = {}
+    onDelete: (String) -> Unit = {},
+    onTogglePublic: (String) -> Unit = {}
 ) {
     var showConfirmDialog by remember { mutableStateOf(false) }
 
@@ -99,19 +98,43 @@ fun RoutesCard(
                     )
                 }
 
-                // Ícone da lixeira (somente no perfil)
+                // Menu de opções (somente no perfil)
                 if (showDeleteButton) {
-                    IconButton(onClick = { showConfirmDialog = true }) {
+                    var expanded by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { expanded = true }) {
                         Icon(
-                            imageVector = Icons.Outlined.Delete,
-                            contentDescription = "Excluir rota",
-                            tint = Color.Red,
+                            painter = painterResource(R.drawable.three_dots), // coloque um ícone de 3 pontinhos no /res
+                            contentDescription = "Mais opções",
+                            tint = Color.LightGray,
                             modifier = Modifier.size(22.dp)
+                        )
+                    }
+
+                    androidx.compose.material3.DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        androidx.compose.material3.DropdownMenuItem(
+                            text = { Text(if (route.public) "Tornar privada" else "Tornar pública") },
+                            onClick = {
+                                expanded = false
+                                onTogglePublic(route.rid)  // ← você vai receber essa lambda no componente
+                            }
+                        )
+
+                        androidx.compose.material3.DropdownMenuItem(
+                            text = { Text("Excluir", color = Color.Red) },
+                            onClick = {
+                                expanded = false
+                                showConfirmDialog = true
+                            }
                         )
                     }
                 } else {
                     Spacer(modifier = Modifier.width(22.dp))
                 }
+
             }
 
             if (showConfirmDialog) {
