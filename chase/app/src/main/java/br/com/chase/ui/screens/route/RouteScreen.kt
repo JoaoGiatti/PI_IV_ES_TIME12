@@ -30,10 +30,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -50,6 +52,7 @@ import br.com.chase.utils.formatDistance
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -88,6 +91,27 @@ fun RouteScreen(
     )
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
+    // Client de localização "lembrado"
+    val fusedClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    // Callback único para podermos iniciar/parar updates corretamente
+    val locationCallback = remember {
+        object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                val loc = result.lastLocation ?: return
+
+                vm.onLocationReceived(
+                    LatLng(loc.latitude, loc.longitude),
+                    loc.accuracy,
+                    loc.time,
+                    loc.speed
+                )
+            }
+        }
+    }
+
     val userMarkerBitmap by produceState<Bitmap?>(initialValue = null, state.user?.photoUrl) {
         if (state.user?.photoUrl != null) {
             val loader = ImageLoader(context)
@@ -103,39 +127,46 @@ fun RouteScreen(
     val balloonBitmap = userMarkerBitmap?.let { createBalloonBitmap(it) }
     val markerIcon = balloonBitmap?.let { BitmapDescriptorFactory.fromBitmap(it) }
 
+    // Pede permissão na primeira vez
     LaunchedEffect(Unit) {
         locationPermission.launchPermissionRequest()
     }
-    LaunchedEffect(state.isRecording) {
-        if (state.isRecording) {
-            if (
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                val client = LocationServices.getFusedLocationProviderClient(context)
-                val request = LocationRequest.Builder(
-                    Priority.PRIORITY_HIGH_ACCURACY,
-                    1000
-                ).build()
 
-                client.requestLocationUpdates(
-                    request,
-                    object : LocationCallback() {
-                        override fun onLocationResult(result: LocationResult) {
-                            val loc = result.lastLocation ?: return
-                            vm.addLocation(
-                                LatLng(loc.latitude, loc.longitude),
-                                loc.accuracy
-                            )
-                        }
-                    },
-                    Looper.getMainLooper()
-                )
-            }
+    // Controla INÍCIO / PARADA dos updates de localização baseado em isRecording + permissão
+    LaunchedEffect(state.isRecording, locationPermission.status.isGranted) {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (state.isRecording && hasPermission) {
+            val request = LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                3000L // intervalo "desejado" em ms
+            )
+                .setMinUpdateIntervalMillis(2000L)      // intervalo mínimo
+                .setMinUpdateDistanceMeters(5f)       // deslocamento mínimo em metros
+                .build()
+
+            fusedClient.requestLocationUpdates(
+                request,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        } else {
+            // Não está gravando ou sem permissão: garante que parou
+            fusedClient.removeLocationUpdates(locationCallback)
         }
     }
+
+    // Garante que ao sair da tela pare de ouvir localização
+    DisposableEffect(Unit) {
+        onDispose {
+            fusedClient.removeLocationUpdates(locationCallback)
+        }
+    }
+
+    // Move a câmera pro último ponto da rota
     LaunchedEffect(state.route.points) {
         if (state.route.points.isNotEmpty()) {
             val last = state.route.points.last()

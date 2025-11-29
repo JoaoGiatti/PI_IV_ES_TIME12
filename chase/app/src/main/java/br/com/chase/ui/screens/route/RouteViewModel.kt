@@ -6,8 +6,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
-import br.com.chase.utils.MalignoServerUtils
 import br.com.chase.data.model.RouteRequest
+import br.com.chase.utils.MalignoServerUtils
 import br.com.chase.utils.NetworkObserver
 import br.com.chase.utils.formatElapsed
 import com.google.android.gms.maps.model.LatLng
@@ -20,6 +20,17 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 
+
+private const val MAX_ACCURACY_METERS = 50f
+private const val MIN_MOVE_SPEED_MS = 0.25f
+private const val MAX_REASONABLE_SPEED_MS = 7.5f
+private const val CRAZY_JUMP_DISTANCE_METERS = 120f
+private const val CRAZY_JUMP_MIN_ACCURACY_METERS = 30f
+private const val BASE_MIN_MOVE_DISTANCE_METERS = 4f
+private const val MAX_MIN_MOVE_DISTANCE_METERS = 12f
+private const val SMOOTHING_ALPHA = 0.35f
+private const val MAX_DT_SECONDS = 10f
+
 class RouteViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = ChaseSpringRepository(RetrofitModule.api)
@@ -28,7 +39,11 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(RouteState())
     val state: StateFlow<RouteState> get() = _state
 
-    private var lastLocation: LatLng? = null
+
+    private var lastRawLocation: LatLng? = null
+    private var lastRawTime: Long? = null
+    private var lastSmoothedLocation: LatLng? = null
+    private var totalDistanceMeters: Double = 0.0
     private var timerJob: Job? = null
 
     init {
@@ -37,20 +52,56 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
                 _state.value = _state.value.copy(isConnected = connected)
             }
         }
-        _state.value = _state.value.copy(user = FirebaseAuth.getInstance().currentUser)
+
+        // Usuário logado
+        _state.value = _state.value.copy(
+            user = FirebaseAuth.getInstance().currentUser
+        )
+    }
+
+    fun startRun() {
+        if (_state.value.isRecording) return
+
+        viewModelScope.launch {
+            resetTrackingDataForNewRun()
+            for (i in 3 downTo 1) {
+                _state.value = _state.value.copy(countdown = i)
+                delay(1000)
+            }
+
+            val current = _state.value
+            _state.value = current.copy(
+                isRecording = true,
+                countdown = null,
+                route = current.route.copy(
+                    distance = 0.0,
+                    recordTime = "00:00:00",
+                    points = emptyList()
+                )
+            )
+
+            startTimer()
+        }
+    }
+
+    fun stopRun() {
+        if (!_state.value.isRecording) return
+
+        _state.value = _state.value.copy(isRecording = false)
+        timerJob?.cancel()
     }
 
     fun saveRun() = viewModelScope.launch {
-        val current = _state.value.route.copy(
+        val currentRoute = _state.value.route.copy(
             uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
         )
 
         _state.value = _state.value.copy(isLoading = true)
 
-        // SERVIDOD DO MALIGNO
-        validateRouteOnMalignoServer(current)
+        // Validação no servidor "do maligno"
+        validateRouteOnMalignoServer(currentRoute)
 
-        repo.createRoute(current)
+        repo.createRoute(currentRoute)
             .onSuccess {
                 _state.value = _state.value.copy(
                     isLoading = false,
@@ -66,65 +117,138 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             }
     }
 
-    fun startRun() {
-        viewModelScope.launch {
-            for (i in 3 downTo 1) {
-                _state.value = _state.value.copy(countdown = i)
-                delay(1000)
-            }
-            _state.value = _state.value.copy(isRecording = true, countdown = null)
-            startTimer()
-        }
-    }
+    fun onLocationReceived(
+        location: LatLng,
+        accuracy: Float?,
+        timeMillis: Long,
+        speedMs: Float? = null
+    ) {
+        val currentState = _state.value
+        if (!currentState.isRecording) return
 
-    fun stopRun() {
-        _state.value = _state.value.copy(isRecording = false)
-        timerJob?.cancel()
-    }
+        val acc = accuracy ?: Float.MAX_VALUE
 
-    fun addLocation(location: LatLng, accuracy: Float? = null) {
+        if (acc > MAX_ACCURACY_METERS) return
 
-        // Ignorar pontos ruins
-        if (accuracy != null && accuracy > 20f) return
+        val currentRoute = currentState.route
+        val currentPoints = currentRoute.points
 
-        // Se for o primeiro ponto
-        val currentRoute = _state.value.route
-        if (currentRoute.points.isEmpty()) {
-            _state.value = _state.value.copy(
-                route = currentRoute.copy(
-                    points = listOf(location),
-                )
-            )
-            lastLocation = location
+        if (currentPoints.isEmpty() || lastRawLocation == null || lastRawTime == null) {
+            acceptFirstPoint(location, timeMillis)
             return
         }
 
+        val lastRaw = lastRawLocation ?: location
+        val distanceFromLastRaw = distanceBetween(lastRaw, location)
+        val isCrazyJump = distanceFromLastRaw > CRAZY_JUMP_DISTANCE_METERS &&
+                acc > CRAZY_JUMP_MIN_ACCURACY_METERS
+
+        if (isCrazyJump) return
+
+        val lastTime = lastRawTime ?: timeMillis
+        val dtMillis = (timeMillis - lastTime).coerceAtLeast(1L)
+        var dtSeconds = dtMillis / 1000f
+
+        if (dtSeconds > MAX_DT_SECONDS) dtSeconds = MAX_DT_SECONDS
+
+        val calcSpeed = if (dtSeconds > 0f) {
+            distanceFromLastRaw / dtSeconds
+        } else {
+            0f
+        }
+
+        val baseSpeed = when {
+            speedMs != null &&
+                    !speedMs.isNaN() &&
+                    !speedMs.isInfinite() &&
+                    speedMs >= 0f -> speedMs
+            else -> calcSpeed
+        }
+
+        if (baseSpeed > MAX_REASONABLE_SPEED_MS) return
+
+        val effectiveSpeed = baseSpeed.coerceAtLeast(0f)
+        val dynamicMinMoveDistance = computeDynamicMinMoveDistance(acc)
+        val isMoving = distanceFromLastRaw >= dynamicMinMoveDistance &&
+                (effectiveSpeed >= MIN_MOVE_SPEED_MS ||
+                        distanceFromLastRaw >= dynamicMinMoveDistance * 1.8f)
+
+        if (!isMoving) return
+
+        totalDistanceMeters += distanceFromLastRaw
+        lastRawLocation = location
+        lastRawTime = timeMillis
+
+        val smoothed = smoothForDrawing(location)
+        val newPoints = currentPoints + smoothed
+        val newRoute = currentRoute.copy(
+            points = newPoints,
+            distance = totalDistanceMeters
+        )
+
+        _state.value = currentState.copy(route = newRoute)
+    }
+
+    private fun acceptFirstPoint(location: LatLng, timeMillis: Long) {
+        lastRawLocation = location
+        lastRawTime = timeMillis
+        lastSmoothedLocation = location
+        totalDistanceMeters = 0.0
+
+        val currentState = _state.value
+        val currentRoute = currentState.route
+
+        val newRoute = currentRoute.copy(
+            points = listOf(location),
+            distance = 0.0
+        )
+
+        _state.value = currentState.copy(route = newRoute)
+    }
+
+    private fun distanceBetween(a: LatLng, b: LatLng): Float {
         val result = FloatArray(1)
         Location.distanceBetween(
-            lastLocation!!.latitude, lastLocation!!.longitude,
-            location.latitude, location.longitude,
+            a.latitude, a.longitude,
+            b.latitude, b.longitude,
             result
         )
+        return result[0]
+    }
 
-        val distanceMoved = result[0]
+    private fun smoothForDrawing(raw: LatLng): LatLng {
+        val prev = lastSmoothedLocation
+        if (prev == null) {
+            lastSmoothedLocation = raw
+            return raw
+        }
 
-        // Ignorar ruído do GPS (parado)
-        if (distanceMoved < 20f) return
+        val lat = prev.latitude + (raw.latitude - prev.latitude) * SMOOTHING_ALPHA
+        val lng = prev.longitude + (raw.longitude - prev.longitude) * SMOOTHING_ALPHA
 
-        val updatedDistance = currentRoute.distance + distanceMoved
+        val smoothed = LatLng(lat, lng)
+        lastSmoothedLocation = smoothed
+        return smoothed
+    }
 
-        _state.value = _state.value.copy(
-            route = currentRoute.copy(
-                distance = updatedDistance,
-                points = currentRoute.points + location,
-            )
-        )
+    private fun computeDynamicMinMoveDistance(accuracy: Float): Float {
+        val basedOnAccuracy = accuracy * 0.35f
+        return basedOnAccuracy
+            .coerceAtLeast(BASE_MIN_MOVE_DISTANCE_METERS)
+            .coerceAtMost(MAX_MIN_MOVE_DISTANCE_METERS)
+    }
 
-        // Atualiza último ponto válido
-        lastLocation = location
+    private fun resetTrackingDataForNewRun() {
+        lastRawLocation = null
+        lastRawTime = null
+        lastSmoothedLocation = null
+        totalDistanceMeters = 0.0
+        timerJob?.cancel()
     }
 
     private fun resetRouteInfo() {
+        resetTrackingDataForNewRun()
+
         _state.value = _state.value.copy(
             isRecording = false,
             route = RouteRequest(
@@ -138,11 +262,11 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
                 points = emptyList()
             )
         )
-        lastLocation = null
-        timerJob?.cancel()
     }
 
     private fun startTimer() {
+        timerJob?.cancel()
+
         timerJob = viewModelScope.launch {
             val startTime = currentTimeMillis()
 
@@ -155,6 +279,7 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
                         recordTime = formatElapsed(elapsed)
                     )
                 )
+
                 delay(1000)
             }
         }
