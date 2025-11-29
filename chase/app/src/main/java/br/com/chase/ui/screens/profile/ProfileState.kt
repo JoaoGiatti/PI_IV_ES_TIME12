@@ -15,5 +15,6 @@ data class ProfileState (
     val isConnected: Boolean = true,
     val editing: Boolean = false,
     val showDialog: Boolean = false,
-    val editingBio: String = ""
+    val editingBio: String = "",
+    val isRefreshing: Boolean = false
 )

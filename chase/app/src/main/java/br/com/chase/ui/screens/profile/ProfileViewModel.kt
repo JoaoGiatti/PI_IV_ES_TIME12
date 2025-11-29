@@ -9,6 +9,7 @@ import br.com.chase.data.api.RetrofitModule
 import br.com.chase.data.model.RouteResponse
 import br.com.chase.utils.NetworkObserver
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -36,6 +37,16 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         loadUserData()
     }
 
+    fun refresh() = viewModelScope.launch {
+        _state.update { it.copy(isRefreshing = true, errorMessage = null) }
+
+        delay(2000)
+
+        currentUser()
+        loadUserRoutes()
+        loadUserData()
+    }
+
     fun currentUser() = viewModelScope.launch {
         _state.value = _state.value.copy(user = FirebaseAuth.getInstance().currentUser)
     }
@@ -47,10 +58,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
         chaseSpringRepository.getRoutesByUser(uid)
             .onSuccess { routes ->
-                _state.update { it.copy(routes = routes, isLoading = false) }
+                _state.update { it.copy(routes = routes, isLoading = false, isRefreshing = false) }
             }
             .onFailure { e ->
-                _state.update { it.copy(errorMessage = e.message, isLoading = false) }
+                _state.update { it.copy(errorMessage = e.message, isLoading = false, isRefreshing = false) }
             }
     }
 

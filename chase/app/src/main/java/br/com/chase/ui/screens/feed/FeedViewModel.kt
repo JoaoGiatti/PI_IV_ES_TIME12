@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
 import br.com.chase.utils.NetworkObserver
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -30,15 +31,25 @@ class FeedViewModel(application: Application) : AndroidViewModel(application) {
         loadFeedItems()
     }
 
+    fun refresh() = viewModelScope.launch {
+        _state.update { it.copy(isRefreshing = true, errorMessage = null) }
+
+        delay(2000)
+
+        loadFeedItems()
+    }
+
     private fun loadFeedItems() = viewModelScope.launch {
         _state.update { it.copy(isLoading = true, errorMessage = null) }
 
         chaseSpringRepository.getPublicRoutes()
             .onSuccess { routes ->
-                _state.update { it.copy(routes = routes, isLoading = false) }
+                _state.update { it.copy(routes = routes, isLoading = false, isRefreshing = false) }
             }
             .onFailure { e ->
-                _state.update { it.copy(errorMessage = e.message, isLoading = false) }
+                _state.update { it.copy(errorMessage = e.message, isLoading = false, isRefreshing = false) }
             }
     }
+
+
 }

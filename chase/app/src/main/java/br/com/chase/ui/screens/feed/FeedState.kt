@@ -11,5 +11,6 @@ data class FeedState(
     val userData: UserResponse? = null,
     val isConnected: Boolean = true,
     val routes: List<RouteResponse> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isRefreshing: Boolean = false
 )

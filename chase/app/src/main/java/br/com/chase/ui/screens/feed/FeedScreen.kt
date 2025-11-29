@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,66 +31,77 @@ import br.com.chase.ui.components.LoadingIndicator
 import br.com.chase.ui.components.RoutesCard
 import br.com.chase.ui.theme.Poppins
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedScreen(
     viewModel: FeedViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(WindowInsets.statusBars.asPaddingValues())
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { viewModel.refresh() },
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(WindowInsets.statusBars.asPaddingValues())
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
 
-        when {
-            state.isLoading -> {
-                LoadingIndicator()
-            }
-            state.routes.isEmpty() -> {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = "Melhores Rotas São Paulo",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
+            when {
+                // loading inicial (sem dados)
+                state.isLoading && state.routes.isEmpty() -> {
+                    LoadingIndicator()
+                }
 
-                Text(
-                    text = "Não há rotas por enquanto",
-                    fontFamily = Poppins,
-                    fontSize = 15.sp,
-                    color = Color.Gray
-                )
-            }
-            else -> {
-                Spacer(modifier = Modifier.height(10.dp))
+                // sem rotas
+                state.routes.isEmpty() -> {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Melhores Rotas São Paulo",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
 
-                Text(
-                    text = "Melhores Rotas São Paulo",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
+                    Text(
+                        text = "Não há rotas por enquanto",
+                        fontFamily = Poppins,
+                        fontSize = 15.sp,
+                        color = Color.Gray
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                else -> {
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+                    Text(
+                        text = "Melhores Rotas São Paulo",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
 
-                    items(state.routes) { route ->
-                        Spacer(modifier = Modifier.height(16.dp))
-                        RoutesCard(route)
+                    Spacer(modifier = Modifier.height(10.dp))
 
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        items(state.routes) { route ->
+                            Spacer(modifier = Modifier.height(16.dp))
+                            RoutesCard(route)
+                        }
+
+                        item { Spacer(modifier = Modifier.height(24.dp)) }
                     }
-
-                    item { Spacer(modifier = Modifier.height(24.dp)) }
                 }
             }
         }
