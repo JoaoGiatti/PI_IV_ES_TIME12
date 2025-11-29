@@ -1,6 +1,5 @@
 package com.maligno.client;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,12 @@ public class Rota {
     private String recordTime;   // "HH:mm:ss"
     private List<LatLng> points;
 
-    // Construtor...
+    // Construtor de rota. Aqui não lançamos Exception porque o servidor é responsável
+    // por validar se a rota é válida ou não. Valores nulos, incorretos ou tentativas
+    // de cheating são tratados pelo ValidadorDeRota, que devolve uma resposta adequada
+    // ao cliente. Se lançássemos exceções para cada rota inválida (null ou valores
+    // inconsistentes), o servidor poderia parar sua execução e deixaria de cumprir
+    // o papel de validar e responder corretamente.
     public Rota(String uid,
                 String name,
                 String description,
@@ -31,8 +35,10 @@ public class Rota {
         this.endLocation = endLocation;
         this.distance = distance;
         this.recordTime = recordTime;
-        this.points = (points != null) ? points : new ArrayList<>();
+        this.points = (points != null) ? points : new ArrayList<LatLng>();
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
 
     public String getUid() {
         return uid;
@@ -98,6 +104,8 @@ public class Rota {
         this.points = points;
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+
     @Override
     public String toString() {
 
@@ -162,5 +170,34 @@ public class Rota {
 
         if(ret < 0) ret = -ret;
         return ret;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    // Construtor de cópia de rota...
+    public Rota(Rota rota) throws Exception {
+        if (rota == null) throw new Exception("Objeto Nulo no construtor de Copia!");
+
+        this.uid = rota.uid;
+        this.name = rota.name;
+        this.description = rota.description;
+        this.startLocation = rota.startLocation;
+        this.endLocation = rota.endLocation;
+        this.distance = rota.distance;
+        this.recordTime = rota.recordTime;
+
+        this.points = new ArrayList<>();
+        for (LatLng p : rota.points) {
+            this.points.add((LatLng) p.clone());
+        }
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            return new Rota(this);
+        } catch (Exception erro) {} // sei que o cc só da erro quando recebe null, e this nunca é null
+
+        return null;
     }
 }
