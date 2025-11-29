@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
-import br.com.chase.data.model.RouteValidatorServerMaligno
+import br.com.chase.utils.MalignoServerUtils
 import br.com.chase.data.model.RouteRequest
 import br.com.chase.utils.NetworkObserver
 import br.com.chase.utils.formatElapsed
@@ -161,8 +161,7 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun validateRouteOnMalignoServer(routeRequest: RouteRequest) {
-        // TODO: substituir o ip da sua maquina...
-        val client = RouteValidatorServerMaligno("IP", 3000) { valido ->
+        val client = MalignoServerUtils { valido ->
             _state.value = _state.value.copy(validacaoRota = valido)
         }
 

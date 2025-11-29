@@ -1,13 +1,14 @@
-package br.com.chase.data.model
+package br.com.chase.utils
 
 import android.util.Log
+import br.com.chase.data.model.RouteRequest
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.Socket
 
-class RouteValidatorServerMaligno(
-    private val host: String,
-    private val port: Int,
+class MalignoServerUtils(
+    private val host: String = "192.168.15.6",
+    private val port: Int = 3000,
     private val callback: (Boolean) -> Unit
 ) : Thread() {
     private var pedido: RouteRequest? = null
@@ -37,6 +38,12 @@ class RouteValidatorServerMaligno(
                 out.writeUTF(req.endLocation)
                 out.writeUTF(req.distance.toString())
                 out.writeUTF(req.recordTime)
+
+                out.writeInt(req.points.size)
+                for (point in req.points) {
+                    out.writeDouble(point.latitude)
+                    out.writeDouble(point.longitude)
+                }
 
                 out.flush()
 
