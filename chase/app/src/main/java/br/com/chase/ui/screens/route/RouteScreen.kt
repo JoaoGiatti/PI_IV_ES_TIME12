@@ -35,8 +35,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.chase.ui.components.RouteNameDialog
 import br.com.chase.ui.theme.PrimaryRainbow
 import br.com.chase.utils.calcularPace
 import br.com.chase.utils.createBalloonBitmap
@@ -97,6 +100,7 @@ fun RouteScreen(
     val fusedClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
+    var showNameDialog by remember { mutableStateOf(false) }
 
     val locationCallback = remember {
         object : LocationCallback() {
@@ -302,7 +306,7 @@ fun RouteScreen(
                                 vm.stopRun()
 
                                 when (state.mode) {
-                                    RunMode.RECORD -> vm.saveRun()
+                                    RunMode.RECORD -> showNameDialog = true
                                     RunMode.COMPETE -> vm.saveCompetitionRun()
                                 }
                             }
@@ -378,6 +382,18 @@ fun RouteScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+            // Abrir o popup
+            if (showNameDialog) {
+                RouteNameDialog(
+                    onConfirm = { name ->
+                        vm.updateRouteName(name)
+
+                        showNameDialog = false
+                        vm.saveRun()
+                    },
+                    onDismiss = { showNameDialog = false }
+                )
             }
         }
     }

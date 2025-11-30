@@ -74,7 +74,7 @@ public class SupervisoraDeConexao extends Thread
                 transmissor.writeUTF(valido? "true" : "false");
 
                 System.out.println(route);
-                System.out.println("📤 Resposta enviada");
+                System.out.println("📤 Resposta enviada: " + valido);
             }
         }
 

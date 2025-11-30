@@ -234,7 +234,12 @@ public class RotaService {
 
         // Atualiza dados da rota
         route.setTop3(newTop3);
-        route.setCompetitors(route.getCompetitors() + 1);
+        boolean competiuAntes = existing != null;
+        boolean criadorDaRota = route.getUid().equals(uid);
+
+        if (!competiuAntes && !criadorDaRota) {
+            route.setCompetitors(route.getCompetitors() + 1);
+        }
         route.setRecordTime(newTop3.get(0).getTotalTime());
         route.setBestAverageSpeed(
                 newTop3.stream().mapToDouble(Ranking::getAverageSpeed).max().orElse(avgSpeed)

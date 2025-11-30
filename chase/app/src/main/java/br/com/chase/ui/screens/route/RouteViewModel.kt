@@ -90,6 +90,7 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     fun saveCompetitionRun() = viewModelScope.launch {
         val currentRoute = _state.value.competitionRoute ?: return@launch
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+        if (_state.value.isCompetitionPathValid != true) return@launch
         val route = _state.value.route
 
         _state.value = _state.value.copy(isLoading = true)
@@ -434,6 +435,15 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         _state.value = _state.value.copy(
             successMessage = null,
             errorMessage = null
+        )
+    }
+
+    fun updateRouteName(name: String) {
+        val current = _state.value
+        _state.value = current.copy(
+            route = current.route.copy(
+                startLocation = name
+            )
         )
     }
 }
