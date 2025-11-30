@@ -23,11 +23,7 @@ import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import kotlin.math.abs
 
-// ===== CONFIG GPS / TRACKING =====
-
-// Aumentei um pouco pra não descartar tanto ponto: mais "preciso" visualmente
 private const val MAX_ACCURACY_METERS = 80f
-
 private const val MIN_MOVE_SPEED_MS = 0.25f
 private const val MAX_REASONABLE_SPEED_MS = 7.5f
 private const val CRAZY_JUMP_DISTANCE_METERS = 120f
@@ -36,9 +32,6 @@ private const val BASE_MIN_MOVE_DISTANCE_METERS = 4f
 private const val MAX_MIN_MOVE_DISTANCE_METERS = 12f
 private const val SMOOTHING_ALPHA = 0.35f
 private const val MAX_DT_SECONDS = 10f
-
-// Distância mínima entre pontos desenhados (Polyline):
-// reduzido pra deixar o traço mais “rico”
 private const val MIN_DRAW_DISTANCE_METERS = 3f
 
 class RouteViewModel(app: Application) : AndroidViewModel(app) {
@@ -55,6 +48,7 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     private var lastSmoothedLocation: LatLng? = null
     private val displayPoints = mutableListOf<LatLng>()
     private var timerJob: Job? = null
+    private var lastKnownLocation: LatLng? = null
 
     init {
         viewModelScope.launch {
@@ -236,7 +230,6 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         val currentRoute = currentState.route
         val currentPoints = currentRoute.points
 
-        // Primeiro ponto
         if (currentPoints.isEmpty() || lastRawLocation == null || lastRawTime == null) {
             acceptFirstPoint(loc, time)
             return
@@ -273,16 +266,11 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
                 (effectiveSpeed >= MIN_MOVE_SPEED_MS ||
                         distanceFromLastRaw >= dynamicMinMoveDistance * 1.8f)
 
-        // --- DISTÂNCIA REAL (bruta) ---
         if (isMoving) {
             totalDistanceMeters += distanceFromLastRaw
             lastRawLocation = loc
             lastRawTime = time
         }
-        // se não for movimento "aceito", não somamos distância
-        // mas ainda assim podemos DESENHAR pra ter mais precisão visual
-
-        // --- DESENHO (suavizado + decimado, mas mais sensível) ---
 
         val smoothed = smoothForDrawing(loc)
 
@@ -291,7 +279,6 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         } else {
             val lastDrawn = displayPoints.last()
             val dDraw = distanceBetween(lastDrawn, smoothed)
-            // bem mais sensível: 3m já gera novo ponto
             if (dDraw >= MIN_DRAW_DISTANCE_METERS) {
                 displayPoints.add(smoothed)
             }
