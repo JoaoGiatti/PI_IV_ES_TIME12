@@ -7,7 +7,9 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import java.util.Locale
 import kotlin.math.min
+import kotlin.math.roundToLong
 
 fun formatElapsed(ms: Long): String {
     val total = ms / 1000
@@ -120,4 +122,25 @@ fun formatCalories(calories: Double?): String {
         return "-- Cal"
     }
     return "${calories.toInt()} Cal"
+}
+
+fun formatDistanceKm(meters: Double): String {
+    val km = meters / 1000.0
+    return String.format(Locale.getDefault(), "%.1f km", km)
+}
+
+
+fun formatTimeFromMillis(totalMillis: Double): String {
+    val totalSeconds = (totalMillis / 1000.0).roundToLong()
+
+    val seconds = totalSeconds % 60
+    val minutes = (totalSeconds / 60) % 60
+    val hours = totalSeconds / 3600
+
+    return String.format(Locale.getDefault(), "%02d:%02d:%02d h", hours, minutes, seconds)
+}
+
+
+fun formatCaloriesKcal(calories: Double): String {
+    return String.format(Locale.getDefault(), "%.2f kcal", calories)
 }

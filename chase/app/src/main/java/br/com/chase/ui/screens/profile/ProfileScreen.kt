@@ -58,6 +58,9 @@ import br.com.chase.ui.components.LoadingIndicator
 import br.com.chase.ui.components.RoutesCard
 import br.com.chase.ui.theme.Poppins
 import br.com.chase.ui.theme.PrimaryRainbow
+import br.com.chase.utils.formatCaloriesKcal
+import br.com.chase.utils.formatDistanceKm
+import br.com.chase.utils.formatTimeFromMillis
 import coil.compose.rememberAsyncImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -282,7 +285,7 @@ fun ProfileScreen(
                                         color = Color.Gray
                                     )
                                     Text(
-                                        text = "00.00 km",
+                                        text = formatDistanceKm(state.userData!!.totalDistance),
                                         fontFamily = Poppins,
                                         fontSize = 19.sp
                                     )
@@ -305,7 +308,7 @@ fun ProfileScreen(
                                         color = Color.Gray
                                     )
                                     Text(
-                                        text = "0:00:00 h",
+                                        text = formatTimeFromMillis(state.userData!!.totalTime),
                                         fontFamily = Poppins,
                                         fontSize = 19.sp
                                     )
@@ -328,7 +331,7 @@ fun ProfileScreen(
                                         color = Color.Gray
                                     )
                                     Text(
-                                        text = "0 Kcal",
+                                        text = formatCaloriesKcal(state.userData!!.totalCalories),
                                         fontFamily = Poppins,
                                         fontSize = 19.sp
                                     )

@@ -224,7 +224,7 @@ fun RouteScreen(
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text("Constância", fontWeight = FontWeight.Bold)
-                            Text(calcularPace(state.competitionRoute!!.distance, state.competitionRoute!!.recordTime)) // ajuste para a sua prop
+                            Text(calcularPace(state.competitionRoute!!.distance, state.competitionRoute!!.recordTime))
                         }
                     }
 

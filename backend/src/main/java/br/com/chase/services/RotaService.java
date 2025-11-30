@@ -104,7 +104,6 @@ public class RotaService {
         String creatorName = "Criador da rota";
         String creatorPhoto = null;
 
-        // Implementação sem lambda para conseguir setar as variáveis acima:
         if (creatorUid != null && !creatorUid.isBlank()) {
             Optional<Usuario> maybeUser = usuarioRepository.findById(creatorUid);
             if (maybeUser.isPresent()) {
@@ -113,6 +112,17 @@ public class RotaService {
                         ? usuario.getDisplayName()
                         : creatorName;
                 creatorPhoto = usuario.getPhotoUrl();
+
+                // === ATUALIZAR ESTATÍSTICAS DO USUÁRIO ===
+                double novaDistanciaTotal = usuario.getTotalDistance() + rota.getDistance();
+                double novoTempoTotal = usuario.getTotalTime() + parseTimeToMs(rota.getRecordTime());
+                double novasCaloriasTotais = usuario.getTotalCalories() + caloriasEstimadas;
+
+                usuario.setTotalDistance(novaDistanciaTotal);
+                usuario.setTotalTime(novoTempoTotal);
+                usuario.setTotalCalories(novasCaloriasTotais);
+
+                usuarioRepository.save(usuario);
             }
         }
 
@@ -175,9 +185,17 @@ public class RotaService {
         double avgSpeed = calcularVelocidadeMedia(route.getDistance(), totalTime);
         long newTimeMs = parseTimeToMs(totalTime);
 
-        // ====== SALVAR RANKING ANTIGO PARA COMPARAÇÃO ======
-        List<Ranking> oldTop3 = new ArrayList<>(route.getTop3());
+        double distanciaKm = route.getDistance() / 1000.0;
+        double pesoPadraoKg = 70;
+        double caloriasEstimadasTentativa = distanciaKm * pesoPadraoKg * 1.036;
 
+        user.setTotalDistance(user.getTotalDistance() + route.getDistance());
+        user.setTotalTime(user.getTotalTime() + newTimeMs);
+        user.setTotalCalories(user.getTotalCalories() + caloriasEstimadasTentativa);
+
+        usuarioRepository.save(user);
+
+        List<Ranking> oldTop3 = new ArrayList<>(route.getTop3());
         List<Ranking> ranking = new ArrayList<>(route.getTop3());
 
         Ranking existing = ranking.stream()
@@ -193,7 +211,7 @@ public class RotaService {
                         "message", "Tempo registrado, mas você já possui um tempo melhor.",
                         "position", ranking.indexOf(existing) + 1,
                         "top3", ranking,
-                        "overtaken", List.of() // ninguém foi ultrapassado
+                        "overtaken", List.of()
                 );
             }
 
@@ -223,11 +241,9 @@ public class RotaService {
             int oldPos = oldTop3.indexOf(oldR);
             int newPos = newTop3.indexOf(oldR);
 
-            // caso tenha saído do top3 => perdeu posição
             if (newPos == -1) {
                 overtaken.add(oldR.getUid());
             } else if (newPos > oldPos) {
-                // caso tenha descido no ranking
                 overtaken.add(oldR.getUid());
             }
         }
@@ -247,13 +263,12 @@ public class RotaService {
 
         rotaRepository.save(route);
 
-        // ====== RETORNO COMPLETO ======
         return Map.of(
                 "message", entrouNoTop3 ? "Entrou no top 3!" : "Tempo registrado.",
                 "top3", newTop3,
                 "enteredTop3", entrouNoTop3,
                 "position", newTop3.indexOf(record) + 1,
-                "overtaken", overtaken // << UID DOS QUE FORAM ULTRAPASSADOS
+                "overtaken", overtaken
         );
     }
 }

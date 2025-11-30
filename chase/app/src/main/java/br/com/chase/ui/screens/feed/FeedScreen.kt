@@ -1,5 +1,6 @@
 package br.com.chase.ui.screens.feed
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -59,23 +60,40 @@ fun FeedScreen(
 
                 // sem rotas
                 state.routes.isEmpty() -> {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Melhores Rotas São Paulo",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                    Column(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        // Título lá em cima
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Melhores Rotas São Paulo",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
 
-                    Text(
-                        text = "Não há rotas por enquanto",
-                        fontFamily = Poppins,
-                        fontSize = 15.sp,
-                        color = Color.Gray
-                    )
+                        // empurra o resto pra baixo
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // Texto centralizado na tela
+                        Text(
+                            text = "Não há rotas por enquanto",
+                            fontFamily = Poppins,
+                            fontSize = 15.sp,
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+
+                        // empurra pra cima de volta (pra ficar no meio)
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
 
                 else -> {
