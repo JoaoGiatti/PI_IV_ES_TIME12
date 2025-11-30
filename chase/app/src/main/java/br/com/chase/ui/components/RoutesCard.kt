@@ -1,5 +1,6 @@
 package br.com.chase.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,14 +52,16 @@ fun RoutesCard(
     route: RouteResponse,
     showDeleteButton: Boolean = false,
     onDelete: (String) -> Unit = {},
-    onTogglePublic: (String) -> Unit = {}
+    onTogglePublic: (String) -> Unit = {},
+    onClick: () -> Unit = {}
 ) {
     var showConfirmDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth(0.9f)
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(12.dp),
         colors = CardDefaults.cardColors(Color.White)

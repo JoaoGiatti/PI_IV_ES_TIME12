@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Looper
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -90,13 +91,10 @@ fun RouteScreen(
         skipHiddenState = true
     )
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
-
-    // Client de localização "lembrado"
     val fusedClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
 
-    // Callback único para podermos iniciar/parar updates corretamente
     val locationCallback = remember {
         object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
@@ -111,7 +109,6 @@ fun RouteScreen(
             }
         }
     }
-
     val userMarkerBitmap by produceState<Bitmap?>(initialValue = null, state.user?.photoUrl) {
         if (state.user?.photoUrl != null) {
             val loader = ImageLoader(context)
@@ -127,12 +124,9 @@ fun RouteScreen(
     val balloonBitmap = userMarkerBitmap?.let { createBalloonBitmap(it) }
     val markerIcon = balloonBitmap?.let { BitmapDescriptorFactory.fromBitmap(it) }
 
-    // Pede permissão na primeira vez
     LaunchedEffect(Unit) {
         locationPermission.launchPermissionRequest()
     }
-
-    // Controla INÍCIO / PARADA dos updates de localização baseado em isRecording + permissão
     LaunchedEffect(state.isRecording, locationPermission.status.isGranted) {
         val hasPermission = ContextCompat.checkSelfPermission(
             context,
@@ -158,15 +152,11 @@ fun RouteScreen(
             fusedClient.removeLocationUpdates(locationCallback)
         }
     }
-
-    // Garante que ao sair da tela pare de ouvir localização
     DisposableEffect(Unit) {
         onDispose {
             fusedClient.removeLocationUpdates(locationCallback)
         }
     }
-
-    // Move a câmera pro último ponto da rota
     LaunchedEffect(state.route.points) {
         if (state.route.points.isNotEmpty()) {
             val last = state.route.points.last()
@@ -178,6 +168,29 @@ fun RouteScreen(
             )
         }
     }
+    LaunchedEffect(state.competitionPoints) {
+        if (state.competitionPoints.isNotEmpty() && state.route.points.isEmpty()) {
+            val first = state.competitionPoints.first()
+            cameraPositionState.animate(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition(first, 20f, 55f, 0f)
+                ),
+                durationMs = 300
+            )
+        }
+    }
+
+    LaunchedEffect(state.successMessage, state.errorMessage) {
+        state.successMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            vm.clearMessages()
+        }
+        state.errorMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            vm.clearMessages()
+        }
+    }
+
 
     BottomSheetScaffold(
         modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
@@ -192,7 +205,6 @@ fun RouteScreen(
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -228,7 +240,12 @@ fun RouteScreen(
                         containerColor = Color.Transparent
                     )
                 ) {
-                    Text(if (!state.isRecording) "Iniciar" else "Parar")
+                    val label = when (state.mode) {
+                        RunMode.RECORD  -> if (!state.isRecording) "Iniciar" else "Parar"
+                        RunMode.COMPETE -> if (!state.isRecording) "Iniciar prova" else "Parar prova"
+                    }
+
+                    Text(label)
                 }
             }
         }
@@ -242,6 +259,16 @@ fun RouteScreen(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState
             ) {
+                // 1) ROTA ALVO (COMPETIÇÃO) - "fantasma"
+                if (state.competitionPoints.size > 1) {
+                    Polyline(
+                        points = state.competitionPoints,
+                        width = 12f,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                // 2) ROTA QUE ESTÁ SENDO GRAVADA AGORA
                 if (state.route.points.size > 1) {
                     Polyline(
                         points = state.route.points,
@@ -249,6 +276,7 @@ fun RouteScreen(
                     )
                 }
 
+                // 3) MARCADOR DO USUÁRIO (na rota atual)
                 if (state.route.points.isNotEmpty() && markerIcon != null) {
                     Marker(
                         state = MarkerState(position = state.route.points.last()),

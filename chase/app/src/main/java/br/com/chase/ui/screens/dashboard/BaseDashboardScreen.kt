@@ -32,6 +32,7 @@ import br.com.chase.ui.components.NoInternetBanner
 import br.com.chase.ui.screens.feed.FeedScreen
 import br.com.chase.ui.screens.profile.ProfileScreen
 import br.com.chase.ui.screens.route.RouteScreen
+import br.com.chase.ui.screens.route.RouteViewModel   // <-- IMPORTANTE
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +42,9 @@ fun BaseDashboardScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+
+    // RouteViewModel compartilhado entre páginas
+    val routeViewModel: RouteViewModel = viewModel()   // <-- AQUI
 
     val pagerState = rememberPagerState(
         initialPage = state.selectedTab,
@@ -56,7 +60,9 @@ fun BaseDashboardScreen(
             modifier = Modifier.fillMaxSize(),
             bottomBar = {
                 NavigationBar(
-                    modifier = Modifier.fillMaxWidth().height(64.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
                         .border(
                             width = 1.dp,
                             color = Color(0xFFDDDDDD),
@@ -66,7 +72,10 @@ fun BaseDashboardScreen(
                 ) {
                     NavigationBarItem(
                         selected = state.selectedTab == 0,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(0) }
+                            routeViewModel.startRecordMode() // se clicar no ícone, volta pro modo normal
+                        },
                         icon = {
                             Image(
                                 painter = if (state.selectedTab == 0)
@@ -117,8 +126,19 @@ fun BaseDashboardScreen(
                     .padding(bottom = paddingValues.calculateBottomPadding())
             ) { page ->
                 when (page) {
-                    0 -> RouteScreen(paddingValues)
-                    1 -> FeedScreen()
+                    0 -> RouteScreen(
+                        paddingValues = paddingValues,
+                        vm = routeViewModel              // <-- usa o mesmo VM
+                    )
+                    1 -> FeedScreen(
+                        onRouteClick = { route ->
+                            // quando clicar numa rota no feed → competição
+                            routeViewModel.startCompetition(route)
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        }
+                    )
                     2 -> ProfileScreen()
                 }
             }

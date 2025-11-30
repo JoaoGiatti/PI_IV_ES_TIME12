@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.chase.data.model.RouteResponse
 import br.com.chase.ui.components.LoadingIndicator
 import br.com.chase.ui.components.RoutesCard
 import br.com.chase.ui.theme.Poppins
@@ -34,7 +35,8 @@ import br.com.chase.ui.theme.Poppins
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedScreen(
-    viewModel: FeedViewModel = viewModel()
+    viewModel: FeedViewModel = viewModel(),
+    onRouteClick: (RouteResponse) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -97,7 +99,10 @@ fun FeedScreen(
                     ) {
                         items(state.routes) { route ->
                             Spacer(modifier = Modifier.height(16.dp))
-                            RoutesCard(route)
+                            RoutesCard(
+                                route = route,
+                                onClick = { onRouteClick(route) }
+                            )
                         }
 
                         item { Spacer(modifier = Modifier.height(24.dp)) }

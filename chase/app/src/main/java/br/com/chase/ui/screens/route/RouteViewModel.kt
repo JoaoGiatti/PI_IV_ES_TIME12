@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
 import br.com.chase.data.model.RouteRequest
+import br.com.chase.data.model.RouteResponse
 import br.com.chase.utils.MalignoServerUtils
 import br.com.chase.utils.NetworkObserver
 import br.com.chase.utils.formatElapsed
@@ -19,9 +20,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
+import kotlin.math.abs
 
+// ===== CONFIG GPS / TRACKING =====
 
-private const val MAX_ACCURACY_METERS = 50f
+// Aumentei um pouco pra não descartar tanto ponto: mais "preciso" visualmente
+private const val MAX_ACCURACY_METERS = 80f
+
 private const val MIN_MOVE_SPEED_MS = 0.25f
 private const val MAX_REASONABLE_SPEED_MS = 7.5f
 private const val CRAZY_JUMP_DISTANCE_METERS = 120f
@@ -31,6 +36,10 @@ private const val MAX_MIN_MOVE_DISTANCE_METERS = 12f
 private const val SMOOTHING_ALPHA = 0.35f
 private const val MAX_DT_SECONDS = 10f
 
+// Distância mínima entre pontos desenhados (Polyline):
+// reduzido pra deixar o traço mais “rico”
+private const val MIN_DRAW_DISTANCE_METERS = 3f
+
 class RouteViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = ChaseSpringRepository(RetrofitModule.api)
@@ -39,11 +48,16 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(RouteState())
     val state: StateFlow<RouteState> get() = _state
 
-
+    // Tracking "real" (pra distância)
     private var lastRawLocation: LatLng? = null
     private var lastRawTime: Long? = null
-    private var lastSmoothedLocation: LatLng? = null
     private var totalDistanceMeters: Double = 0.0
+
+    // Tracking pro desenho (suavizado + decimado)
+    private var lastSmoothedLocation: LatLng? = null
+    private val displayPoints = mutableListOf<LatLng>()
+
+    // Timer
     private var timerJob: Job? = null
 
     init {
@@ -53,17 +67,54 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
 
-        // Usuário logado
         _state.value = _state.value.copy(
             user = FirebaseAuth.getInstance().currentUser
         )
     }
+
+    // ============================================================
+    //      MODOS: RECORD / COMPETE
+    // ============================================================
+
+    fun startCompetition(route: RouteResponse) {
+        // Ajuste se o seu RouteResponse tiver outro campo de pontos
+        val targetPoints: List<LatLng> = route.points
+
+        _state.value = _state.value.copy(
+            mode = RunMode.COMPETE,
+            competitionRoute = route,
+            competitionPoints = targetPoints,
+            isCompetitionPathValid = null,
+            route = _state.value.route.copy(
+                distance = 0.0,
+                recordTime = "00:00:00",
+                points = emptyList()
+            )
+        )
+
+        resetTrackingDataForNewRun()
+    }
+
+    fun startRecordMode() {
+        _state.value = _state.value.copy(
+            mode = RunMode.RECORD,
+            competitionRoute = null,
+            competitionPoints = emptyList(),
+            isCompetitionPathValid = null
+        )
+        resetTrackingDataForNewRun()
+    }
+
+    // ============================================================
+    //      CONTROLE DA CORRIDA
+    // ============================================================
 
     fun startRun() {
         if (_state.value.isRecording) return
 
         viewModelScope.launch {
             resetTrackingDataForNewRun()
+
             for (i in 3 downTo 1) {
                 _state.value = _state.value.copy(countdown = i)
                 delay(1000)
@@ -85,10 +136,45 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun stopRun() {
-        if (!_state.value.isRecording) return
+        val current = _state.value
+        if (!current.isRecording) return
 
-        _state.value = _state.value.copy(isRecording = false)
+        _state.value = current.copy(isRecording = false)
         timerJob?.cancel()
+
+        // Se não é modo COMPETE, não rola validação especial
+        if (current.mode != RunMode.COMPETE) {
+            return
+        }
+
+        val userDistanceMeters = current.route.distance
+
+        // Distância alvo: preferimos a distance salva em RouteResponse
+        val targetDistanceMeters: Double? = current.competitionRoute?.distance
+            ?: if (current.competitionPoints.isNotEmpty()) {
+                computeRouteLength(current.competitionPoints)
+            } else {
+                null
+            }
+
+        if (targetDistanceMeters == null) {
+            return
+        }
+
+        val similar = isSimilarDistance(
+            userMeters = userDistanceMeters,
+            targetMeters = targetDistanceMeters
+        )
+
+        _state.value = current.copy(
+            isRecording = false,
+            isCompetitionPathValid = similar,
+            successMessage = if (similar) {
+                "Prova concluída na rota correta!"
+            } else {
+                "Prova concluída, mas percurso diferente da rota oficial."
+            }
+        )
     }
 
     fun saveRun() = viewModelScope.launch {
@@ -98,7 +184,6 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
 
         _state.value = _state.value.copy(isLoading = true)
 
-        // Validação no servidor "do maligno"
         validateRouteOnMalignoServer(currentRoute)
 
         repo.createRoute(currentRoute)
@@ -117,51 +202,45 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             }
     }
 
-    fun onLocationReceived(
-        location: LatLng,
-        accuracy: Float?,
-        timeMillis: Long,
-        speedMs: Float? = null
-    ) {
+    // ============================================================
+    //      LOCALIZAÇÃO / TRACKING
+    // ============================================================
+
+    fun onLocationReceived(loc: LatLng, accu: Float?, time: Long, speed: Float? = null) {
         val currentState = _state.value
         if (!currentState.isRecording) return
 
-        val acc = accuracy ?: Float.MAX_VALUE
-
+        val acc = accu ?: Float.MAX_VALUE
         if (acc > MAX_ACCURACY_METERS) return
 
         val currentRoute = currentState.route
         val currentPoints = currentRoute.points
 
+        // Primeiro ponto
         if (currentPoints.isEmpty() || lastRawLocation == null || lastRawTime == null) {
-            acceptFirstPoint(location, timeMillis)
+            acceptFirstPoint(loc, time)
             return
         }
 
-        val lastRaw = lastRawLocation ?: location
-        val distanceFromLastRaw = distanceBetween(lastRaw, location)
+        val lastRaw = lastRawLocation ?: loc
+        val distanceFromLastRaw = distanceBetween(lastRaw, loc)
+
         val isCrazyJump = distanceFromLastRaw > CRAZY_JUMP_DISTANCE_METERS &&
                 acc > CRAZY_JUMP_MIN_ACCURACY_METERS
-
         if (isCrazyJump) return
 
-        val lastTime = lastRawTime ?: timeMillis
-        val dtMillis = (timeMillis - lastTime).coerceAtLeast(1L)
+        val lastTime = lastRawTime ?: time
+        val dtMillis = (time - lastTime).coerceAtLeast(1L)
         var dtSeconds = dtMillis / 1000f
-
         if (dtSeconds > MAX_DT_SECONDS) dtSeconds = MAX_DT_SECONDS
 
-        val calcSpeed = if (dtSeconds > 0f) {
-            distanceFromLastRaw / dtSeconds
-        } else {
-            0f
-        }
+        val calcSpeed = if (dtSeconds > 0f) distanceFromLastRaw / dtSeconds else 0f
 
         val baseSpeed = when {
-            speedMs != null &&
-                    !speedMs.isNaN() &&
-                    !speedMs.isInfinite() &&
-                    speedMs >= 0f -> speedMs
+            speed != null &&
+                    !speed.isNaN() &&
+                    !speed.isInfinite() &&
+                    speed >= 0f -> speed
             else -> calcSpeed
         }
 
@@ -169,25 +248,53 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
 
         val effectiveSpeed = baseSpeed.coerceAtLeast(0f)
         val dynamicMinMoveDistance = computeDynamicMinMoveDistance(acc)
+
         val isMoving = distanceFromLastRaw >= dynamicMinMoveDistance &&
                 (effectiveSpeed >= MIN_MOVE_SPEED_MS ||
                         distanceFromLastRaw >= dynamicMinMoveDistance * 1.8f)
 
-        if (!isMoving) return
+        // --- DISTÂNCIA REAL (bruta) ---
+        if (isMoving) {
+            totalDistanceMeters += distanceFromLastRaw
+            lastRawLocation = loc
+            lastRawTime = time
+        }
+        // se não for movimento "aceito", não somamos distância
+        // mas ainda assim podemos DESENHAR pra ter mais precisão visual
 
-        totalDistanceMeters += distanceFromLastRaw
-        lastRawLocation = location
-        lastRawTime = timeMillis
+        // --- DESENHO (suavizado + decimado, mas mais sensível) ---
 
-        val smoothed = smoothForDrawing(location)
-        val newPoints = currentPoints + smoothed
+        val smoothed = smoothForDrawing(loc)
+
+        if (displayPoints.isEmpty()) {
+            displayPoints.add(smoothed)
+        } else {
+            val lastDrawn = displayPoints.last()
+            val dDraw = distanceBetween(lastDrawn, smoothed)
+            // bem mais sensível: 3m já gera novo ponto
+            if (dDraw >= MIN_DRAW_DISTANCE_METERS) {
+                displayPoints.add(smoothed)
+            }
+        }
+
         val newRoute = currentRoute.copy(
-            points = newPoints,
+            points = displayPoints.toList(),
             distance = totalDistanceMeters
         )
 
         _state.value = currentState.copy(route = newRoute)
     }
+
+    fun clearMessages() {
+        _state.value = _state.value.copy(
+            successMessage = null,
+            errorMessage = null
+        )
+    }
+
+    // ============================================================
+    //      HELPERS / UTILS
+    // ============================================================
 
     private fun acceptFirstPoint(location: LatLng, timeMillis: Long) {
         lastRawLocation = location
@@ -195,11 +302,14 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         lastSmoothedLocation = location
         totalDistanceMeters = 0.0
 
+        displayPoints.clear()
+        displayPoints.add(location)
+
         val currentState = _state.value
         val currentRoute = currentState.route
 
         val newRoute = currentRoute.copy(
-            points = listOf(location),
+            points = displayPoints.toList(),
             distance = 0.0
         )
 
@@ -214,6 +324,52 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             result
         )
         return result[0]
+    }
+
+    private fun computeRouteLength(points: List<LatLng>): Double {
+        if (points.size < 2) return 0.0
+        var total = 0.0
+        var prev = points.first()
+        for (i in 1 until points.size) {
+            val cur = points[i]
+            total += distanceBetween(prev, cur).toDouble()
+            prev = cur
+        }
+        return total
+    }
+
+    /**
+     * Validação BEM FROUXA só por distância:
+     * - aceita se:
+     *    - razão entre 0.6x e 1.4x, OU
+     *    - diferença absoluta <= 80m.
+     */
+    private fun isSimilarDistance(
+        userMeters: Double,
+        targetMeters: Double
+    ): Boolean {
+        if (userMeters <= 0.0 || targetMeters <= 0.0) return false
+
+        // rota muito curta → GPS vira loteria; aqui aceitamos sempre
+        if (targetMeters < 10.0) {
+            return false
+        }
+
+        val delta = abs(userMeters - targetMeters)
+        val ratio = userMeters / targetMeters
+
+        val lowerRatio = 0.6
+        val upperRatio = 1.4
+
+        if (ratio in lowerRatio..upperRatio) {
+            return true
+        }
+
+        if (delta <= 80.0) {
+            return true
+        }
+
+        return false
     }
 
     private fun smoothForDrawing(raw: LatLng): LatLng {
@@ -243,6 +399,7 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         lastRawTime = null
         lastSmoothedLocation = null
         totalDistanceMeters = 0.0
+        displayPoints.clear()
         timerJob?.cancel()
     }
 
