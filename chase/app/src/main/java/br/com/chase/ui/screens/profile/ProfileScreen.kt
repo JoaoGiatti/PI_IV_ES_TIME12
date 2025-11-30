@@ -67,7 +67,7 @@ import coil.compose.rememberAsyncImagePainter
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel()
-){
+) {
     val state by viewModel.state.collectAsState()
 
     PullToRefreshBox(
@@ -87,7 +87,7 @@ fun ProfileScreen(
                 }
 
                 else -> {
-                    // Fundo arco-iris
+                    // Fundo arco-íris (header)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -107,12 +107,12 @@ fun ProfileScreen(
                         ) {}
                     }
 
-                    // Parte das informacoes do usuario nome, bio e level
+                    // Card branco com as informações do usuário
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(630.dp)
-                            .align(Alignment.BottomCenter),
+                            .fillMaxSize()
+                            .padding(top = 100.dp)    // topo fixo, independe da altura da tela
+                            .align(Alignment.TopCenter),
                         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                         colors = CardDefaults.cardColors(Color.White)
                     ) {
@@ -120,7 +120,9 @@ fun ProfileScreen(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            // espaço para a foto "entrar" no card
                             Spacer(modifier = Modifier.height(80.dp))
+
                             Text(
                                 text = state.user?.displayName ?: "Usuário sem nome",
                                 fontFamily = Poppins,
@@ -229,7 +231,10 @@ fun ProfileScreen(
                                                         ),
                                                         shape = RoundedCornerShape(10.dp)
                                                     )
-                                                    .padding(vertical = 8.dp, horizontal = 35.dp),
+                                                    .padding(
+                                                        vertical = 8.dp,
+                                                        horizontal = 35.dp
+                                                    ),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
@@ -270,7 +275,7 @@ fun ProfileScreen(
 
                             Spacer(modifier = Modifier.height(25.dp))
 
-                            // Parte das informacoes de quilometragem, tempo e gastos
+                            // Parte das informações de quilometragem, tempo e gastos
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center
@@ -285,7 +290,7 @@ fun ProfileScreen(
                                         color = Color.Gray
                                     )
                                     Text(
-                                        text = formatDistanceKm(state.userData!!.totalDistance),
+                                        text = formatDistanceKm(state.userData?.totalDistance ?: 0.0),
                                         fontFamily = Poppins,
                                         fontSize = 19.sp
                                     )
@@ -308,7 +313,7 @@ fun ProfileScreen(
                                         color = Color.Gray
                                     )
                                     Text(
-                                        text = formatTimeFromMillis(state.userData!!.totalTime),
+                                        text = formatTimeFromMillis(state.userData?.totalTime ?: 0.0),
                                         fontFamily = Poppins,
                                         fontSize = 19.sp
                                     )
@@ -331,7 +336,7 @@ fun ProfileScreen(
                                         color = Color.Gray
                                     )
                                     Text(
-                                        text = formatCaloriesKcal(state.userData!!.totalCalories),
+                                        text = formatCaloriesKcal(state.userData?.totalCalories ?: 0.0),
                                         fontFamily = Poppins,
                                         fontSize = 19.sp
                                     )
@@ -347,7 +352,7 @@ fun ProfileScreen(
 
                             Spacer(modifier = Modifier.height(20.dp))
 
-                            // Parte da listagem de rotas que o usuario possui
+                            // Parte da listagem de rotas que o usuário possui
                             if (state.routes.isEmpty()) {
                                 Text(
                                     text = "Não há rotas por enquanto",
@@ -377,14 +382,14 @@ fun ProfileScreen(
                         }
                     }
 
-                    // Foto do usuario
+                    // Foto do usuário — agora ancorada no topo
                     Box(
                         modifier = Modifier
-                            .offset(y = (-235).dp)
-                            .align(Alignment.Center)
+                            .align(Alignment.TopCenter)
+                            .offset(y = 40.dp)          // distância fixa a partir do topo
                             .size(130.dp)
                             .shadow(5.dp, CircleShape)
-                            .background(color = Color.White)
+                            .background(color = Color.White, shape = CircleShape)
                     ) {
                         Image(
                             painter = if (state.user?.photoUrl != null)
@@ -400,6 +405,7 @@ fun ProfileScreen(
                     }
                 }
             }
+
             if (state.successMessage != null) {
                 AlertDialog(
                     onDismissRequest = { viewModel.clearMessage() },
