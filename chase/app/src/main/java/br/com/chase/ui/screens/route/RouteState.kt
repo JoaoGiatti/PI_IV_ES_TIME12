@@ -10,7 +10,6 @@ enum class RunMode {
     COMPETE // competir em uma rota / prova
 }
 
-
 data class RouteState(
     val isLoading: Boolean = false,
     val isRecording: Boolean = false,
