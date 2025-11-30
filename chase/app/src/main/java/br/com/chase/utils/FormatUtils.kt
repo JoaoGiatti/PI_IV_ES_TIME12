@@ -94,3 +94,30 @@ fun createBalloonBitmap(
 
     return output
 }
+
+fun calcularPace(distanciaMetros: Double, tempo: String): String {
+    val partes = tempo.split(":")
+    require(partes.size == 3) { "Formato de tempo inválido (esperado HH:mm:ss)" }
+
+    val horas = partes[0].toDouble()
+    val minutos = partes[1].toDouble()
+    val segundos = partes[2].toDouble()
+
+    val totalSegundos = horas * 3600 + minutos * 60 + segundos
+    val distanciaKm = distanciaMetros / 1000.0
+    require(distanciaKm > 0) { "Distância deve ser maior que zero" }
+
+    val paceSegundos = totalSegundos / distanciaKm
+
+    val paceMin = (paceSegundos / 60).toInt()
+    val paceSec = (paceSegundos % 60).toInt()
+
+    return String.format("%02d:%02d min/km", paceMin, paceSec)
+}
+
+fun formatCalories(calories: Double?): String {
+    if (calories == null || calories.isNaN()) {
+        return "-- Cal"
+    }
+    return "${calories.toInt()} Cal"
+}

@@ -48,7 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.chase.ui.theme.PrimaryRainbow
+import br.com.chase.utils.calcularPace
 import br.com.chase.utils.createBalloonBitmap
+import br.com.chase.utils.formatAverageSpeed
+import br.com.chase.utils.formatCalories
 import br.com.chase.utils.formatDistance
 import coil.ImageLoader
 import coil.request.ImageRequest
@@ -197,57 +200,133 @@ fun RouteScreen(
         sheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         sheetContainerColor = MaterialTheme.colorScheme.onPrimary,
         sheetContent = {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+
+            val isCompetePreview = state.mode == RunMode.COMPETE && !state.isRecording
+
+            if (isCompetePreview) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column {
-                        Text("Tempo", fontWeight = FontWeight.Bold)
-                        Text(state.route.recordTime)
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text("Distância", fontWeight = FontWeight.Bold)
+                            Text(formatDistance(state.competitionRoute!!.distance))
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text("Constância", fontWeight = FontWeight.Bold)
+                            Text(calcularPace(state.competitionRoute!!.distance, state.competitionRoute!!.recordTime)) // ajuste para a sua prop
+                        }
                     }
-                    Column {
-                        Text("Distância", fontWeight = FontWeight.Bold)
-                        Text(formatDistance(state.route.distance))
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text("Tempo recorde", fontWeight = FontWeight.Bold)
+                            Text(state.competitionRoute!!.recordTime)
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text("Velocidade Média", fontWeight = FontWeight.Bold)
+                            Text(formatAverageSpeed(state.competitionRoute!!.bestAverageSpeed))
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text("Gasto", fontWeight = FontWeight.Bold)
+                            Text(formatCalories(state.competitionRoute!!.estimatedCalories))
+                        }
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            vm.startRun()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.horizontalGradient(PrimaryRainbow),
+                                shape = RoundedCornerShape(18.dp)
+                            ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        )
+                    ) {
+                        Text("Competir!")
                     }
                 }
-
-                Spacer(Modifier.height(20.dp))
-
-                Button(
-                    onClick = {
-                        if (!state.isRecording) {
-                            vm.startRun()
-                        } else {
-                            vm.stopRun()
-
-                            when (state.mode) {
-                                RunMode.RECORD -> vm.saveRun()
-                                RunMode.COMPETE -> vm.saveCompetitionRun()
-                            }
-                        }
-                    },
-                    modifier = Modifier
+            } else {
+                Column(
+                    Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.horizontalGradient(PrimaryRainbow),
-                            shape = RoundedCornerShape(18.dp)
-                        ),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent
-                    )
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val label = when (state.mode) {
-                        RunMode.RECORD  -> if (!state.isRecording) "Iniciar" else "Parar"
-                        RunMode.COMPETE -> if (!state.isRecording) "Iniciar prova" else "Parar prova"
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Column {
+                            Text("Tempo", fontWeight = FontWeight.Bold)
+                            Text(state.route.recordTime)
+                        }
+                        Column {
+                            Text("Distância", fontWeight = FontWeight.Bold)
+                            Text(formatDistance(state.route.distance))
+                        }
                     }
 
-                    Text(label)
+                    Spacer(Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+                            if (!state.isRecording) {
+                                vm.startRun()
+                            } else {
+                                vm.stopRun()
+
+                                when (state.mode) {
+                                    RunMode.RECORD -> vm.saveRun()
+                                    RunMode.COMPETE -> vm.saveCompetitionRun()
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.horizontalGradient(PrimaryRainbow),
+                                shape = RoundedCornerShape(18.dp)
+                            ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        )
+                    ) {
+                        val label = when (state.mode) {
+                            RunMode.RECORD ->
+                                if (!state.isRecording) "Iniciar" else "Parar"
+
+                            RunMode.COMPETE ->
+                                if (!state.isRecording) "Iniciar prova" else "Parar prova"
+                        }
+
+                        Text(label)
+                    }
                 }
             }
         }
@@ -290,7 +369,6 @@ fun RouteScreen(
                         .background(Color(0x88000000)),
                     contentAlignment = Alignment.Center
                 ) {
-
                     val text = if (state.countdown == 0) "GO!" else state.countdown.toString()
 
                     Text(
