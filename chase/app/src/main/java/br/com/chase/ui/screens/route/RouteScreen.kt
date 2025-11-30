@@ -179,7 +179,6 @@ fun RouteScreen(
             )
         }
     }
-
     LaunchedEffect(state.successMessage, state.errorMessage) {
         state.successMessage?.let { msg ->
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -190,7 +189,6 @@ fun RouteScreen(
             vm.clearMessages()
         }
     }
-
 
     BottomSheetScaffold(
         modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
@@ -227,7 +225,11 @@ fun RouteScreen(
                             vm.startRun()
                         } else {
                             vm.stopRun()
-                            vm.saveRun()
+
+                            when (state.mode) {
+                                RunMode.RECORD -> vm.saveRun()
+                                RunMode.COMPETE -> vm.saveCompetitionRun()
+                            }
                         }
                     },
                     modifier = Modifier
@@ -259,7 +261,6 @@ fun RouteScreen(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState
             ) {
-                // 1) ROTA ALVO (COMPETIÇÃO) - "fantasma"
                 if (state.competitionPoints.size > 1) {
                     Polyline(
                         points = state.competitionPoints,
@@ -267,16 +268,12 @@ fun RouteScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-
-                // 2) ROTA QUE ESTÁ SENDO GRAVADA AGORA
                 if (state.route.points.size > 1) {
                     Polyline(
                         points = state.route.points,
                         width = 12f
                     )
                 }
-
-                // 3) MARCADOR DO USUÁRIO (na rota atual)
                 if (state.route.points.isNotEmpty() && markerIcon != null) {
                     Marker(
                         state = MarkerState(position = state.route.points.last()),

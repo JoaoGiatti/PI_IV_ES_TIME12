@@ -2,6 +2,8 @@ package br.com.chase.data
 
 import android.util.Log
 import br.com.chase.data.api.ChaseApi
+import br.com.chase.data.model.RecordResponse
+import br.com.chase.data.model.RouteAttemptRequest
 import br.com.chase.data.model.RouteRequest
 import br.com.chase.data.model.RouteResponse
 import br.com.chase.data.model.UserRequest
@@ -139,6 +141,31 @@ class ChaseSpringRepository(
         }
     } catch (e: Exception) {
         Log.e(TAG, "Exception while toggling public", e)
+        Result.failure(e)
+    }
+
+    suspend fun registerRecord(
+        rid: String,
+        attempt: RouteAttemptRequest
+    ): Result<RecordResponse> = try {
+        val response = api.updateTop3Route(
+            rid = rid,
+            uid = attempt.uid,
+            timeString = attempt.timeString
+        )
+
+        if (response.isSuccessful) {
+            response.body()?.let { Result.success(it) }
+                ?: run {
+                    Log.e(TAG, "Empty record response when registering record")
+                    Result.failure(Exception("Empty record response"))
+                }
+        } else {
+            Log.e(TAG, "Error ${response.code()} while registering record: ${response.errorBody()?.string()}")
+            Result.failure(Exception("Error ${response.code()} while registering record"))
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Exception while registering record", e)
         Result.failure(e)
     }
 }

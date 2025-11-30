@@ -1,6 +1,6 @@
 package br.com.chase.data.api
 
-import br.com.chase.data.model.RouteAttemptRequest
+import br.com.chase.data.model.RecordResponse
 import br.com.chase.data.model.RouteRequest
 import br.com.chase.data.model.RouteResponse
 import br.com.chase.data.model.UserRequest
@@ -13,6 +13,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ChaseApi {
 
@@ -48,10 +49,12 @@ interface ChaseApi {
     suspend fun getRoutesByUser(@Path("uid") uid: String): Response<List<RouteResponse>>
 
     // PUT - Atualiza o top3 de uma rota pelo RID => Rota ID...
-    @PUT("routes/{rid}/attempt")
-    suspend fun updateRoute(
-        @Path("rid") rid: String, @Body attempt: RouteAttemptRequest
-    ): Response<RouteResponse>
+    @POST("routes/{rid}/record")
+    suspend fun updateTop3Route(
+        @Path("rid") rid: String,
+        @Query("uid") uid: String,
+        @Query("timeString") timeString: String
+    ): Response<RecordResponse>
 
     @DELETE("routes/{rid}")
     suspend fun deleteRoute(@Path("rid") rid: String): Response<Unit>

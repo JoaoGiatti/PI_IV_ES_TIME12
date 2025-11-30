@@ -43,5 +43,14 @@ data class Ranking(
 
 data class RouteAttemptRequest(
     val uid: String,
-    val totalTime: String,
+    val timeString: String,
 )
+
+data class RecordResponse(
+    val message: String? = null,
+    val top3: List<Ranking>? = null,
+    val enteredTop3: Boolean? = null,
+    val position: Int? = null,
+    val overtaken: List<String>? = null
+)
+

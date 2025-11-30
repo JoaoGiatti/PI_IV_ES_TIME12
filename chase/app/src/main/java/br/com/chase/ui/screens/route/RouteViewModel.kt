@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.chase.data.ChaseSpringRepository
 import br.com.chase.data.api.RetrofitModule
+import br.com.chase.data.model.RouteAttemptRequest
 import br.com.chase.data.model.RouteRequest
 import br.com.chase.data.model.RouteResponse
 import br.com.chase.utils.MalignoServerUtils
@@ -48,16 +49,11 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(RouteState())
     val state: StateFlow<RouteState> get() = _state
 
-    // Tracking "real" (pra distância)
     private var lastRawLocation: LatLng? = null
     private var lastRawTime: Long? = null
     private var totalDistanceMeters: Double = 0.0
-
-    // Tracking pro desenho (suavizado + decimado)
     private var lastSmoothedLocation: LatLng? = null
     private val displayPoints = mutableListOf<LatLng>()
-
-    // Timer
     private var timerJob: Job? = null
 
     init {
@@ -72,12 +68,68 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
-    // ============================================================
-    //      MODOS: RECORD / COMPETE
-    // ============================================================
+    fun saveRun() = viewModelScope.launch {
+        val currentRoute = _state.value.route.copy(
+            uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+        )
+
+        _state.value = _state.value.copy(isLoading = true)
+
+        validateRouteOnMalignoServer(currentRoute)
+
+        repo.createRoute(currentRoute)
+            .onSuccess {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    successMessage = "Rota salva com sucesso!"
+                )
+                resetRouteInfo()
+            }
+            .onFailure { e ->
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Erro ao salvar rota"
+                )
+            }
+    }
+
+    fun saveCompetitionRun() = viewModelScope.launch {
+        val currentRoute = _state.value.competitionRoute ?: return@launch
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+        val route = _state.value.route
+
+        _state.value = _state.value.copy(isLoading = true)
+
+        repo.registerRecord(
+            rid = currentRoute.rid,
+            attempt = RouteAttemptRequest(
+                uid = uid,
+                timeString = route.recordTime
+            )
+        )
+            .onSuccess { res ->
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    successMessage = res.message
+                )
+            }
+            .onFailure { e ->
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Erro ao registrar recorde"
+                )
+            }
+    }
+
+    private fun validateRouteOnMalignoServer(routeRequest: RouteRequest) {
+        val client = MalignoServerUtils { valido ->
+            _state.value = _state.value.copy(validacaoRota = valido)
+        }
+
+        client.enviarPedido(routeRequest)
+    }
 
     fun startCompetition(route: RouteResponse) {
-        // Ajuste se o seu RouteResponse tiver outro campo de pontos
         val targetPoints: List<LatLng> = route.points
 
         _state.value = _state.value.copy(
@@ -104,10 +156,6 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         )
         resetTrackingDataForNewRun()
     }
-
-    // ============================================================
-    //      CONTROLE DA CORRIDA
-    // ============================================================
 
     fun startRun() {
         if (_state.value.isRecording) return
@@ -142,14 +190,11 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         _state.value = current.copy(isRecording = false)
         timerJob?.cancel()
 
-        // Se não é modo COMPETE, não rola validação especial
         if (current.mode != RunMode.COMPETE) {
             return
         }
 
         val userDistanceMeters = current.route.distance
-
-        // Distância alvo: preferimos a distance salva em RouteResponse
         val targetDistanceMeters: Double? = current.competitionRoute?.distance
             ?: if (current.competitionPoints.isNotEmpty()) {
                 computeRouteLength(current.competitionPoints)
@@ -166,45 +211,20 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             targetMeters = targetDistanceMeters
         )
 
-        _state.value = current.copy(
-            isRecording = false,
-            isCompetitionPathValid = similar,
-            successMessage = if (similar) {
-                "Prova concluída na rota correta!"
-            } else {
-                "Prova concluída, mas percurso diferente da rota oficial."
-            }
-        )
+        if(!similar) {
+            _state.value = current.copy(
+                isRecording = false,
+                isCompetitionPathValid = false,
+                errorMessage = "Percurso diferente da rota oficial"
+            )
+        } else {
+            _state.value = current.copy(
+                isRecording = false,
+                isCompetitionPathValid = true,
+                successMessage = "Prova concluída na rota correta!"
+            )
+        }
     }
-
-    fun saveRun() = viewModelScope.launch {
-        val currentRoute = _state.value.route.copy(
-            uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-        )
-
-        _state.value = _state.value.copy(isLoading = true)
-
-        validateRouteOnMalignoServer(currentRoute)
-
-        repo.createRoute(currentRoute)
-            .onSuccess {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    successMessage = "Rota salva com sucesso!"
-                )
-                resetRouteInfo()
-            }
-            .onFailure { e ->
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    errorMessage = e.message ?: "Erro ao salvar rota"
-                )
-            }
-    }
-
-    // ============================================================
-    //      LOCALIZAÇÃO / TRACKING
-    // ============================================================
 
     fun onLocationReceived(loc: LatLng, accu: Float?, time: Long, speed: Float? = null) {
         val currentState = _state.value
@@ -285,16 +305,31 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         _state.value = currentState.copy(route = newRoute)
     }
 
-    fun clearMessages() {
-        _state.value = _state.value.copy(
-            successMessage = null,
-            errorMessage = null
-        )
-    }
+    // ---------------------------------------------------------------------------------------------
 
-    // ============================================================
-    //      HELPERS / UTILS
-    // ============================================================
+    private fun isSimilarDistance(userMeters: Double, targetMeters: Double): Boolean {
+        if (userMeters <= 0.0 || targetMeters <= 0.0) return false
+
+        if (targetMeters < 10.0) {
+            return false
+        }
+
+        val delta = abs(userMeters - targetMeters)
+        val ratio = userMeters / targetMeters
+
+        val lowerRatio = 0.6
+        val upperRatio = 1.4
+
+        if (ratio in lowerRatio..upperRatio) {
+            return true
+        }
+
+        if (delta <= 80.0) {
+            return true
+        }
+
+        return false
+    }
 
     private fun acceptFirstPoint(location: LatLng, timeMillis: Long) {
         lastRawLocation = location
@@ -336,40 +371,6 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
             prev = cur
         }
         return total
-    }
-
-    /**
-     * Validação BEM FROUXA só por distância:
-     * - aceita se:
-     *    - razão entre 0.6x e 1.4x, OU
-     *    - diferença absoluta <= 80m.
-     */
-    private fun isSimilarDistance(
-        userMeters: Double,
-        targetMeters: Double
-    ): Boolean {
-        if (userMeters <= 0.0 || targetMeters <= 0.0) return false
-
-        // rota muito curta → GPS vira loteria; aqui aceitamos sempre
-        if (targetMeters < 10.0) {
-            return false
-        }
-
-        val delta = abs(userMeters - targetMeters)
-        val ratio = userMeters / targetMeters
-
-        val lowerRatio = 0.6
-        val upperRatio = 1.4
-
-        if (ratio in lowerRatio..upperRatio) {
-            return true
-        }
-
-        if (delta <= 80.0) {
-            return true
-        }
-
-        return false
     }
 
     private fun smoothForDrawing(raw: LatLng): LatLng {
@@ -442,11 +443,10 @@ class RouteViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun validateRouteOnMalignoServer(routeRequest: RouteRequest) {
-        val client = MalignoServerUtils { valido ->
-            _state.value = _state.value.copy(validacaoRota = valido)
-        }
-
-        client.enviarPedido(routeRequest)
+    fun clearMessages() {
+        _state.value = _state.value.copy(
+            successMessage = null,
+            errorMessage = null
+        )
     }
 }
