@@ -31,13 +31,10 @@
 - Compartilhar rotas e resultados.
 
 ### 🎮 Gamificação
-- Sistema de badges por metas (ex: primeiro PR, 5 tentativas concluídas).
 - Pontuação por completar rotas.
 - Conquista de territórios virtuais.
 
 ### 📱 Experiência do Utilizador
-- Funcionamento offline para registrar corridas sem internet.
-- Notificações push para engajamento.
 - Interface moderna e intuitiva com Jetpack Compose.
 
 ---
@@ -81,7 +78,6 @@ Utilizamos uma arquitetura moderna e escalável, combinando tecnologias robustas
 | Banco de Dados         | MongoDB                  | Armazenamento NoSQL flexível.       |
 | Mapas e Geolocalização | Google Maps SDK          | Criação e exibição de rotas.        |
 | Autenticação           | Firebase Auth            | Gerenciamento seguro de usuários.   |
-| Notificações           | Firebase Cloud Messaging | Notificações push para engajamento. |
 | Controle de Versão     | Git                      | Versionamento de código.            |
 | Design e Prototipagem  | Figma                    | Interface e experiência do usuário. |
 
@@ -158,7 +154,7 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
   <tr>
     <td align="center" width="150px">
       <a href="https://github.com/eduardanepomuceno" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/SEU_USUARIO_AQUI" width="100px;" alt="Eduarda Profile Picture" style="border-radius: 50%;"/><br>
+        <img src="https://github.com/eduarda-lpn.png" width="100px;" alt="Eduarda Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
           <strong>Eduarda Nepomuceno</strong>
         </sub>
@@ -176,7 +172,7 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
   <tr>
     <td align="center" width="150px">
       <a href="https://github.com/jeanyuki148" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/jeanyuki148" width="100px;" alt="Jean Profile Picture" style="border-radius: 50%;"/><br>
+        <img src="https://github.com/JeanYuki148.png" width="100px;" alt="Jean Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
           <strong>Jean Yuki</strong>
         </sub>
@@ -185,7 +181,7 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
     <td>
       <h3>BACKEND E BANCO DE DADOS</h3>
         <p>
-            Desenvolvimento da API e integração com MongoDB.
+            Desenvolvimento da API, integração com MongoDB e desenvolvimento das entidades do banco.
         </p>
     </td>
   </tr>
@@ -194,16 +190,16 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
   <tr>
     <td align="center" width="150px">
       <a href="https://github.com/JheniferLais" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/JheniferLais" width="100px;" alt="Jhenifer Profile Picture" style="border-radius: 50%;"/><br>
+        <img src="https://github.com/JheniferLais.png" width="100px;" alt="Jhenifer Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
           <strong>Jhenifer Laís</strong>
         </sub>
       </a>
     </td>
     <td>
-      <h3>DESENVOLVIMENTO MOBILE E TESTES</h3>
+      <h3>DESENVOLVIMENTO MOBILE, SERVIDOR E TESTES</h3>
         <p>
-            Implementação de funcionalidades e garantia de qualidade.
+            Implementação mobile, servidor java do maligno e testes unitários.
         </p>
     </td>
   </tr>
@@ -212,16 +208,16 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
   <tr>
     <td align="center" width="150px">
       <a href="https://github.com/joaogiatti" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/91966589?v=4" width="100px;" alt="João Profile Picture" style="border-radius: 50%;"/><br>
+        <img src="https://github.com/JoaoGiatti.png" width="100px;" alt="João Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
           <strong>João Giatti</strong>
         </sub>
       </a>
     </td>
     <td>
-      <h3>FULL-STACK E COORDENAÇÃO</h3>
+      <h3>BACKEND E DESIGN</h3>
         <p>
-            Desenvolvimento full-stack e coordenação do projeto.
+            Desenvolvimento da API e desenvolvimento do prototipo(FIGMA)
         </p>
     </td>
   </tr>
@@ -230,7 +226,7 @@ Um agradecimento especial à equipe de desenvolvimento do Chase.
   <tr>
     <td align="center" width="150px">
       <a href="https://github.com/thiagovolponi" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/SEU_USUARIO_AQUI" width="100px;" alt="Thiago Profile Picture" style="border-radius: 50%;"/><br>
+        <img src="https://github.com/Thicosmo.png" width="100px;" alt="Thiago Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
           <strong>Thiago Volponi</strong>
         </sub>
